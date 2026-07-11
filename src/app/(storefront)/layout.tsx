@@ -1,10 +1,17 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { logout } from "@/actions/auth";
 
-export default function StorefrontLayout({
+export default async function StorefrontLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-black/10 bg-black text-white">
@@ -21,9 +28,22 @@ export default function StorefrontLayout({
             </Link>
           </nav>
           <div className="flex items-center gap-4 text-sm font-medium">
-            <Link href="/login" className="hover:text-[#8DC63F]">
-              Kirish
-            </Link>
+            {user ? (
+              <>
+                <Link href="/account" className="hover:text-[#8DC63F]">
+                  Kabinet
+                </Link>
+                <form action={logout}>
+                  <button type="submit" className="hover:text-[#8DC63F]">
+                    Chiqish
+                  </button>
+                </form>
+              </>
+            ) : (
+              <Link href="/login" className="hover:text-[#8DC63F]">
+                Kirish
+              </Link>
+            )}
             <Link href="/cart" className="hover:text-[#8DC63F]">
               Savat
             </Link>
