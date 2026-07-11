@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/actions/auth";
+import { CartBadge } from "@/components/storefront/CartBadge";
 
 export default async function StorefrontLayout({
   children,
@@ -44,9 +45,7 @@ export default async function StorefrontLayout({
                 Kirish
               </Link>
             )}
-            <Link href="/cart" className="hover:text-[#8DC63F]">
-              Savat
-            </Link>
+            <CartBadge />
           </div>
         </div>
       </header>
