@@ -21,6 +21,8 @@
 
 **Eslatma:** Supabase va Vercel MCP vositalarim ba'zi eski loyihalar (`crmsystem`, `trade-smc`) bilan bir hisobga ulangan — bu sizning haqiqiy hisoblaringiz, chalkashlik yo'q, faqat shuni bilib qo'ying.
 
+**Git identifikatsiyasi:** Commit muallif email'i GitHub hisobingizga (`Mz-mirkhamidov`) bog'lanmagani uchun Vercel bir necha deploy'ni "Blocked" deb belgilagan edi. Lokal git `user.email` endi `mz.muzaf17@gmail.com`ga sozlangan — shu commit'dan boshlab avtomatik deploy qayta ishlaydi.
+
 ## Bajarilgan ishlar (Faza A–F)
 
 - **Fundament:** Next.js 16 + TS + Tailwind, to'liq Postgres sxemasi (16 jadval, RLS bilan), email+parol auth, route guard
