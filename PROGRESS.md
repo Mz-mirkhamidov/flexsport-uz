@@ -10,7 +10,7 @@
 
 | Narsa | Qiymat |
 |---|---|
-| GitHub repo | https://github.com/Mz-mirkhamidov/flexsport-uz (private) — **e'tibor bering:** eski `mz-muzaf` hisobi/repo o'chirilgan, hozir shu yangi hisobda |
+| GitHub repo | https://github.com/Mz-mirkhamidov/flexsport-uz (public) — **e'tibor bering:** eski `mz-muzaf` hisobi/repo o'chirilgan, hozir shu yangi hisobda |
 | Vercel loyihasi | `flexsport-uz`, `mzmuzaf17-2341's projects` jamoasida, GitHub'ga ulangan (avtomatik CI/CD — har push'da qayta deploy bo'ladi) |
 | Production URL | https://flexsport-uz.vercel.app |
 | Supabase loyihasi | `uwjwoyvvusigpyccgwbr` — sizning shaxsiy hisobingizda |
@@ -21,7 +21,7 @@
 
 **Eslatma:** Supabase va Vercel MCP vositalarim ba'zi eski loyihalar (`crmsystem`, `trade-smc`) bilan bir hisobga ulangan — bu sizning haqiqiy hisoblaringiz, chalkashlik yo'q, faqat shuni bilib qo'ying.
 
-**Git identifikatsiyasi:** Commit muallif email'i GitHub hisobingizga (`Mz-mirkhamidov`) bog'lanmagani uchun Vercel bir necha deploy'ni "Blocked" deb belgilagan edi. Lokal git `user.email` endi `mz.muzaf17@gmail.com`ga sozlangan — shu commit'dan boshlab avtomatik deploy qayta ishlaydi.
+**Git identifikatsiyasi:** Vercel Hobby tarifi xususiy repo uchun boshqa hisob a'zolarini qo'llab-quvvatlamaydi, shu sababli commit muallifi loyiha egasi bilan aniq mos kelmagach deploy "Blocked" bo'lib qolgan edi. Muammoni butunlay hal qilish uchun repo **public** qilib qo'yildi.
 
 ## Bajarilgan ishlar (Faza A–F)
 
