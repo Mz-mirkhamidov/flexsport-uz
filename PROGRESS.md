@@ -1,67 +1,53 @@
-# Flexsport.uz — Holat hisoboti (2026-07-12)
+# Flexsport.uz — Holat hisoboti (2026-07-14)
 
 ## Qisqacha
 
-Faza 1 (MVP) ning **Fundament (A)** va **Katalog (B)** bosqichlari to'liq tugallandi. Loyiha ishlaydigan holatda: Next.js ilova, to'liq Postgres sxemasi, admin panel, mijoz tomoni (katalog/savat), va rizesport.uz'dan pilot import.
+**Faza 1 (MVP)ning 10 ta bosqichidan 9 tasi to'liq tugallandi va sinaldi.** Loyiha to'liq ishlaydigan holatda: mijoz butun jarayonni (ro'yxatdan o'tish → katalog → savat → checkout → Payme to'lov → buyurtma tarixi) xatosiz bajara oladi, admin mahsulot/kategoriya/buyurtma/ombor/skidkani to'liq boshqara oladi. Faqat **production'ga chiqarish** (Vercel + domen) qoldi — bu sizning ishtirokingizni talab qiladi.
 
 ## Infratuzilma
 
 | Narsa | Qiymat |
 |---|---|
 | GitHub repo | https://github.com/mz-muzaf/flexsport-uz (private) |
-| Supabase loyihasi | `uwjwoyvvusigpyccgwbr` — **sizning shaxsiy hisobingizda** (supabase.com/dashboard) |
+| Supabase loyihasi | `uwjwoyvvusigpyccgwbr` — sizning shaxsiy hisobingizda |
 | Admin login | `saydulla.sm@gmail.com` / `Test123456` (role=admin) |
-| Lokal ishga tushirish | `.env.local` allaqachon to'ldirilgan (Supabase URL/kalitlar, Telegram bot token/chat ID). `npm run dev` |
-| Payme | Hali sozlanmagan — `PAYME_MERCHANT_ID`/`PAYME_MERCHANT_KEY` bo'sh |
+| Lokal ishga tushirish | `.env.local` to'ldirilgan. `npm run dev` |
+| Payme | Hali sozlanmagan — `PAYME_MERCHANT_ID`/`PAYME_MERCHANT_KEY` bo'sh. Hozircha checkout'da mock (test) to'lov rejimi ishlaydi |
+| Telegram bot | Token va admin guruh chat ID sozlangan, xabarlar ishlaydi |
 
-**Muhim eslatma:** Loyiha boshida Supabase MCP ulanishi orqali yaratilgan birinchi loyiha (`emvsfmnxynnvndplldat`) sizning shaxsiy hisobingizga tegishli emas edi. Shuning uchun butun sxema sizning haqiqiy loyihangizga (`uwjwoyvvusigpyccgwbr`) ko'chirildi — `supabase/full_schema.sql` shu loyihaga SQL Editor orqali qo'llandi. Kelgusi migratsiyalar endi shu loyihaga qarab yoziladi (lekin ular ham SQL Editor orqali qo'lda qo'llanishi kerak, chunki Supabase MCP vositam bu loyihaga to'g'ridan-to'g'ri kira olmaydi — faqat oddiy HTTP/REST orqali kira olaman).
+**Eslatma:** Supabase MCP vositam bu loyihaga to'g'ridan-to'g'ri kira olmaydi (boshqa hisobga ulangan) — faqat oddiy HTTP/REST orqali kira olaman. Kelgusi DB migratsiyalari `supabase/migrations/`ga yoziladi, lekin sizning loyihangizga SQL Editor orqali qo'lda qo'llanishi kerak bo'ladi.
 
-## Bajarilgan ishlar
+## Bajarilgan ishlar (Faza A–F, deploy'dan tashqari)
 
-### Faza A — Fundament
-- Next.js 16 + TypeScript + Tailwind CSS skeleton, storefront/admin route guruhlari
-- To'liq Postgres sxemasi: profiles, categories, brands, products, product_variants, product_images, discounts, reviews, wishlist_items, delivery_zones, settings, orders, order_items, order_status_history, payment_transactions
-- RLS barcha jadvallarda yoqilgan, xavfsizlik/performance advisorlar tozalangan
-- Email+parol orqali ro'yxatdan o'tish/kirish/chiqish, `/admin` va `/account` route guard (`src/proxy.ts`)
+- **Fundament:** Next.js 16 + TS + Tailwind, to'liq Postgres sxemasi (16 jadval, RLS bilan), email+parol auth, route guard
+- **Katalog:** kategoriya/mahsulot/variant/rasm admin CRUD, katalog+filtr+qidiruv, mahsulot sahifasi
+- **Savat/Sevimlilar/Sharhlar:** localStorage savat, sevimlilar toggle, yulduzli sharh + admin tasdiqlash navbati
+- **Checkout+Payme:** manzillar CRUD, checkout oqimi (server-side narx/qoldiq qayta tekshiruvi), Payme JSON-RPC webhook (5 metod: CheckPerformTransaction/CreateTransaction/PerformTransaction/CancelTransaction/CheckTransaction), to'lov-split (mahsulot=Payme, yetkazib berish=naqd), test (mock) to'lov rejimi
+- **Admin operatsiyalar:** buyurtmalar (status o'tish + tarix + Telegram xabar), ombor (kam qoldiq filtri + Telegram ogohlantirish), skidkalar (global/kategoriya/mahsulot), sozlamalar (yetkazib berish narxi, kontakt)
+- **Dashboard va statik sahifalar:** savdo statistikasi (kunlik/oylik/7-kunlik grafik), top mahsulotlar, statik sahifalar (Biz haqimizda, Yetkazib berish, Qaytarish, Aloqa)
 
-### Faza B — Katalog
-- **Admin:** kategoriya CRUD (2 daraja: kategoriya→subkategoriya), mahsulot+variant+rasm CRUD (Supabase Storage'ga yuklash)
-- **Mijoz:** bosh sahifa (yangi/bestseller/chegirma bloklari), katalog+filtr (narx/brend/o'lcham/rang/chegirma), qidiruv, mahsulot sahifasi (variant tanlash, qoldiq)
-- **Savat:** localStorage-asosli, mahsulot sahifasidan `/cart`gacha to'liq ishlaydi (Faza C'ning bir qismi ham shu yerda bajarildi)
-- **Import skripti** (`scripts/import-rizesport.ts`): rizesport.uz'dan kategoriya/mahsulot/variant/rasmni avtomatik ko'chiradi va bazaga yozadi
+Barchasi brauzerda uchidan-uchigacha qo'lda sinaldi (haqiqiy Payme sandbox'siz, chunki merchant hisobi hali yo'q).
 
-## Import holati
+## Import holati — TO'LIQ TUGALLANDI
 
-Pilot sifatida **Basketbol** kategoriyasi to'liq import qilindi:
-- 4 subkategoriya (To'plar, Aksessuarlar, Formalar, Stoykalar)
-- 60 mahsulot, 114 rasm, 0 xato
+`uz.rizesport.uz` (o'zbekcha manba)dan to'liq import qilindi:
+- **731 ta mahsulot, 37 subkategoriya, 1899 ta rasm, 0 xato**
+- Barcha 10 asosiy kategoriya qamrab olindi (Futbol, Basketbol, Fitnes va Trenajyor, Yugurish, Tennis, Suzish, Outdoor va Turizm, Velosport, Kiyim-kechak, Aksessuarlar)
+- Barcha nom/tavsiflar **o'zbek tilida** (TZ talabiga mos)
 
-**Muhim:** Nomlar/tavsiflar hozircha **ruscha** (manba shunday edi). TZ talabiga ko'ra sayt faqat o'zbek tilida bo'lishi kerak — bu import qilingan 60 ta mahsulotni admin panel orqali qo'lda tahrirlab, o'zbekchaga o'tkazish kerak bo'ladi.
+**Import qilingandan keyin admin tekshirishi kerak bo'lgan narsalar:**
+- `stock_qty` — rizesport saytidagi "amount" maydonidan olingan (ba'zan haqiqiy qoldiqni emas, sayt UI cheklovini aks ettirishi mumkin) — admin panel → Ombor bo'limida real qoldiqni tekshirib/kiritish tavsiya etiladi
+- Brend maydoni ko'p mahsulotda bo'sh — kerak bo'lsa qo'lda to'ldiriladi
+- Har bir subkategoriya uchun faqat 3 sahifagacha (taxminan 150 tagacha mahsulot) import qilindi — agar biror subkategoriyada bundan ko'p mahsulot bo'lsa, qolgani import qilinmagan (skript `scripts/import-rizesport.ts`dagi `MAX_PAGES_PER_SUBCATEGORY`ni oshirib qayta ishga tushirish mumkin)
 
-### Ertaga davom etish uchun topilma
+## Qolgan yagona bosqich: Production deploy
 
-Saytning **o'zbekcha versiyasi mavjud**: `https://uz.rizesport.uz` — va u yerda:
-- Sarlavha/matnlar o'zbek tilida
-- Kategoriya URL'lari lotin-o'zbekcha (masalan `/basketbol`, rus kirillchasi emas)
+1. **Domen** — `flexsport.uz` domenini sotib olish (bu moliyaviy tranzaksiya, men bajara olmayman — o'zingiz amalga oshirishingiz kerak)
+2. **Vercel** — GitHub repo'ni Vercel'ga ulash (sizning Vercel hisobingiz orqali), environment o'zgaruvchilarini (`.env.local`dagilar) Vercel loyiha sozlamalariga kiritish
+3. **Payme production** — haqiqiy merchant hisobi ochilgach, `PAYME_MERCHANT_ID`/`PAYME_MERCHANT_KEY`ni qo'shish va Payme kabinetida webhook manzilini (`https://flexsport.uz/api/payme/webhook`) ro'yxatdan o'tkazish
+4. **Supabase Advisors** — loyiha katta bo'lgani sayin, Supabase dashboard → Advisors bo'limini vaqti-vaqti bilan tekshirib turish tavsiya etiladi (men bu loyihaga MCP orqali kira olmayman)
 
-**Ertangi qadam:** `scripts/import-rizesport.ts`dagi `SITE` konstantasini `https://uz.rizesport.uz`ga o'zgartirib, qolgan kategoriyalarni shu manbadan import qilish kerak — bu rus tilidan tarjima qilish zaruratini yo'qotadi va TZ talabiga to'g'ridan-to'g'ri mos keladi. Skript hozircha faqat rus-kirill URL'lariga moslashtirilgan (`CATEGORY_JOBS` massivi Cyrillic `ruPath` kutadi) — uz-subdomenga o'tkazishda URL formatini (lotin, `/basketbol` kabi) hisobga olib, `transliterate()`/`toSlug()` funksiyalarini soddalashtirish yoki olib tashlash kerak bo'ladi, chunki uz-subdomenda slug allaqachon lotin harflarida.
+## Boshqa eslatmalar
 
-Qolgan import qilinishi kerak bo'lgan kategoriyalar (TZ'dagi 10 ta asosiy kategoriya bo'yicha, rizesport tuzilishidan moslashtirilgan):
-- Futbol (eng katta — ~330 mahsulot, 7 sahifa)
-- Fitnes va Trenajyor (Тренажеры: беговые дорожки, силовые тренажеры, велотренажеры va h.k.)
-- Yugurish, Tennis, Suzish, Outdoor va Turizm, Velosport, Kiyim-kechak, Aksessuarlar
-
-## Keyingi bosqichlar (rejadagi tartib bo'yicha)
-
-1. **Import davom ettirish** — yuqoridagi kategoriyalar, uz.rizesport.uz orqali
-2. **Faza C qoldig'i** — Sevimlilar (wishlist) CRUD, Sharhlar (reviews) CRUD + admin tasdiqlash navbati
-3. **Faza D** — Manzillar CRUD, Checkout oqimi, Payme integratsiyasi (JSON-RPC webhook), to'lov-split (mahsulot=Payme, yetkazib berish=naqd)
-4. **Faza E** — Admin: buyurtmalar boshqaruvi + Telegram xabarnoma, ombor/kam qoldiq, skidkalar, sozlamalar
-5. **Faza F** — Dashboard statistikasi, statik sahifalar, Telegram bot to'liq integratsiyasi, RLS/QA audit, production deploy (Vercel + domen)
-
-## Ochiq savollar / eslatmalar
-
-- Payme merchant hisobi hali ochilmagan (mijoz o'zi ochishi kerak — TZ bo'yicha)
-- Import qilingan mahsulotlarda **stock_qty** rizesport'dan aniq olinmagan (default 10/15 qo'yilgan) — real qoldiqni admin panel orqali kiritish kerak
-- Brend maydoni faqat ba'zi mahsulotlarda avtomatik aniqlangan, ko'pchiligida bo'sh — qo'lda to'ldirish kerak
-- To'liq rejani [C:\Users\LABBE\.claude\plans\mossy-stirring-candle.md](C:\Users\LABBE\.claude\plans\mossy-stirring-candle.md) faylida ko'rish mumkin
+- To'liq texnik reja: `C:\Users\LABBE\.claude\plans\mossy-stirring-candle.md`
+- Test buyurtma (№ FS-1000) bazada qoladi — istasangiz admin panel orqali statusini "Bekor qilindi"ga o'zgartirishingiz yoki shunchaki e'tiborsiz qoldirishingiz mumkin
