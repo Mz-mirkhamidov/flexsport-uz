@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import type { Tables } from "@/types/database.types";
 import { addToCart } from "@/lib/cart/store";
+import { WishlistButton } from "@/components/storefront/WishlistButton";
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat("uz-UZ").format(value) + " so'm";
@@ -16,6 +17,8 @@ type Props = {
   price: number;
   originalPrice: number | null;
   discountPercent: number | null;
+  isWishlisted: boolean;
+  isLoggedIn: boolean;
 };
 
 export function ProductDetail({
@@ -25,6 +28,8 @@ export function ProductDetail({
   price,
   originalPrice,
   discountPercent,
+  isWishlisted,
+  isLoggedIn,
 }: Props) {
   const sortedImages = useMemo(
     () => [...images].sort((a, b) => a.sort_order - b.sort_order),
@@ -176,6 +181,13 @@ export function ProductDetail({
                 : "Savatga qo'shish"}
           </button>
         </div>
+
+        <WishlistButton
+          productId={product.id}
+          productSlug={product.slug}
+          initialWishlisted={isWishlisted}
+          isLoggedIn={isLoggedIn}
+        />
 
         {product.tags.length > 0 && (
           <div className="flex flex-wrap gap-2">

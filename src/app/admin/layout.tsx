@@ -46,6 +46,12 @@ export default function AdminLayout({
             Skidkalar
           </Link>
           <Link
+            href="/admin/reviews"
+            className="rounded px-3 py-2 hover:bg-white/10"
+          >
+            Sharhlar
+          </Link>
+          <Link
             href="/admin/settings"
             className="rounded px-3 py-2 hover:bg-white/10"
           >

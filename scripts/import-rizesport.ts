@@ -1,74 +1,95 @@
 /**
- * One-off catalog import from rizesport.uz (pilot categories only).
+ * Catalog import from uz.rizesport.uz (Uzbek-language mirror — clean Latin
+ * slugs, Uzbek copy, no transliteration needed).
  *
  * Usage:
  *   npx tsx --env-file=.env.local scripts/import-rizesport.ts
  *
- * Requires SUPABASE_SERVICE_ROLE_KEY in .env.local (bypasses RLS for bulk insert
- * + storage upload). Text AND images are copied per explicit site-owner
- * instruction; see the legal note in TZ section 9 about rizesport's own
- * product photography before running this against additional categories.
+ * Requires SUPABASE_SERVICE_ROLE_KEY in .env.local (bypasses RLS for bulk
+ * insert + storage upload). Text AND images are copied per explicit
+ * site-owner instruction; see the legal note in TZ section 9 about
+ * rizesport's own product photography.
  */
 import * as cheerio from "cheerio";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../src/types/database.types";
 import { slugify } from "../src/lib/validation/catalog";
 
-const SITE = "https://rizesport.uz";
-const REQUEST_DELAY_MS = 350;
+const SITE = "https://uz.rizesport.uz";
+const REQUEST_DELAY_MS = 300;
+const MAX_PAGES_PER_SUBCATEGORY = 3;
 
 type CategoryJob = {
   parentSlug: string; // our existing top-level category slug
-  ruPath: string; // rizesport category URL path segment (unencoded, Cyrillic)
+  path: string; // rizesport uz category URL path (Latin, e.g. "futbol_to-plari")
   uzName: string; // subcategory name to create/use in our DB
   uzSlug: string; // subcategory slug in our DB
 };
 
-// Pilot batch: Basketbol subcategories only. Extend this list for future runs.
 const JOBS: CategoryJob[] = [
-  {
-    parentSlug: "basketbol",
-    ruPath: "баскетбольные_мячи",
-    uzName: "To'plar",
-    uzSlug: "basketbol-toplar",
-  },
-  {
-    parentSlug: "basketbol",
-    ruPath: "баскетбольные_аксессуары",
-    uzName: "Aksessuarlar",
-    uzSlug: "basketbol-aksessuarlar",
-  },
-  {
-    parentSlug: "basketbol",
-    ruPath: "баскетбольные_формы",
-    uzName: "Formalar",
-    uzSlug: "basketbol-formalar",
-  },
-  {
-    parentSlug: "basketbol",
-    ruPath: "стойки",
-    uzName: "Stoykalar",
-    uzSlug: "basketbol-stoykalar",
-  },
+  // Futbol
+  { parentSlug: "futbol", path: "futbol_formalari", uzName: "Formalar", uzSlug: "futbol-formalar" },
+  { parentSlug: "futbol", path: "futbol_butsalari", uzName: "Butsalar", uzSlug: "futbol-butsalar" },
+  { parentSlug: "futbol", path: "futbol_to-plari", uzName: "To'plar", uzSlug: "futbol-toplar" },
+  { parentSlug: "futbol", path: "futbol_uchun_darvozabon_qo-lqoplari", uzName: "Darvozabon qo'lqoplari", uzSlug: "futbol-darvozabon-qolqoplari" },
+  { parentSlug: "futbol", path: "futbol_aksessuarlari", uzName: "Aksessuarlar", uzSlug: "futbol-aksessuarlar" },
+
+  // Basketbol
+  { parentSlug: "basketbol", path: "basketbol_to-plari", uzName: "To'plar", uzSlug: "basketbol-toplar" },
+  { parentSlug: "basketbol", path: "basketbol_aksessuarlari", uzName: "Aksessuarlar", uzSlug: "basketbol-aksessuarlar" },
+
+  // Fitnes va Trenajyor
+  { parentSlug: "fitnes-trenajyor", path: "ko-p_funksiyali_trenajorlar", uzName: "Ko'p funksiyali trenajorlar", uzSlug: "fitnes-kop-funksiyali-trenajorlar" },
+  { parentSlug: "fitnes-trenajyor", path: "velotrenajor", uzName: "Velotrenajor", uzSlug: "fitnes-velotrenajor" },
+  { parentSlug: "fitnes-trenajyor", path: "elliptik_trenajorlar", uzName: "Elliptik trenajorlar", uzSlug: "fitnes-elliptik-trenajorlar" },
+  { parentSlug: "fitnes-trenajyor", path: "erkaklar_fitnesi", uzName: "Erkaklar fitnesi", uzSlug: "fitnes-erkaklar" },
+  { parentSlug: "fitnes-trenajyor", path: "ayollar_fitnesi", uzName: "Ayollar fitnesi", uzSlug: "fitnes-ayollar" },
+  { parentSlug: "fitnes-trenajyor", path: "gantellar", uzName: "Gantellar", uzSlug: "fitnes-gantellar" },
+  { parentSlug: "fitnes-trenajyor", path: "turniklar", uzName: "Turniklar", uzSlug: "fitnes-turniklar" },
+  { parentSlug: "fitnes-trenajyor", path: "fitnes_aksessuarlari", uzName: "Aksessuarlar", uzSlug: "fitnes-aksessuarlar" },
+
+  // Yugurish
+  { parentSlug: "yugurish", path: "yugurish_yolaklari", uzName: "Yugurish yo'laklari", uzSlug: "yugurish-yolaklari" },
+
+  // Tennis
+  { parentSlug: "tennis", path: "tennis_raketkasi", uzName: "Raketkalar", uzSlug: "tennis-raketkalar" },
+  { parentSlug: "tennis", path: "tennis_koptogi", uzName: "To'plar", uzSlug: "tennis-toplar" },
+  { parentSlug: "tennis", path: "tennis_uchun_aksessuarlar", uzName: "Aksessuarlar", uzSlug: "tennis-aksessuarlar" },
+  { parentSlug: "tennis", path: "tennis_krossovkalari", uzName: "Krossovkalar", uzSlug: "tennis-krossovkalar" },
+
+  // Suzish
+  { parentSlug: "suzish", path: "suzish_uchun_ko-zoynaklar", uzName: "Ko'zoynaklar", uzSlug: "suzish-kozoynaklar" },
+  { parentSlug: "suzish", path: "suzish_qalpoqlari", uzName: "Qalpoqlar", uzSlug: "suzish-qalpoqlar" },
+  { parentSlug: "suzish", path: "suzish_uchun_aksessuarlar", uzName: "Aksessuarlar", uzSlug: "suzish-aksessuarlar" },
+  { parentSlug: "suzish", path: "erkaklar_plavkasi", uzName: "Plavkalar", uzSlug: "suzish-plavkalar" },
+
+  // Outdoor va Turizm
+  { parentSlug: "outdoor-turizm", path: "havo_to-ldirilgan_yotoqlar", uzName: "Yotoqlar", uzSlug: "outdoor-yotoqlar" },
+  { parentSlug: "outdoor-turizm", path: "skandinavcha_yurish_tayoqchasi", uzName: "Yurish tayoqchalari", uzSlug: "outdoor-yurish-tayoqchalari" },
+  { parentSlug: "outdoor-turizm", path: "baliq_ovlash_uskunalari", uzName: "Baliq ovlash", uzSlug: "outdoor-baliq-ovlash" },
+
+  // Velosport
+  { parentSlug: "velosport", path: "bolalar_velosipedlari", uzName: "Bolalar velosipedi", uzSlug: "velosport-bolalar" },
+  { parentSlug: "velosport", path: "tog-_velosipedi", uzName: "Tog' velosipedi", uzSlug: "velosport-togli" },
+  { parentSlug: "velosport", path: "shahar_velosipedlari", uzName: "Shahar velosipedi", uzSlug: "velosport-shahar" },
+  { parentSlug: "velosport", path: "samokatlar", uzName: "Samokatlar", uzSlug: "velosport-samokatlar" },
+
+  // Kiyim-kechak
+  { parentSlug: "kiyim-kechak", path: "sport_kiyimlari", uzName: "Sport kiyimlari", uzSlug: "kiyim-sport-kiyimlari" },
+  { parentSlug: "kiyim-kechak", path: "futbolkalar", uzName: "Futbolkalar", uzSlug: "kiyim-futbolkalar" },
+  { parentSlug: "kiyim-kechak", path: "shortiklar", uzName: "Shortiklar", uzSlug: "kiyim-shortiklar" },
+  { parentSlug: "kiyim-kechak", path: "krossovkalar", uzName: "Krossovkalar", uzSlug: "kiyim-krossovkalar" },
+
+  // Aksessuarlar
+  { parentSlug: "aksessuarlar", path: "ryukzaklar_va_sumkalar", uzName: "Ryukzak va sumkalar", uzSlug: "aksessuar-ryukzak-sumka" },
+  { parentSlug: "aksessuarlar", path: "sport_elektronikasi", uzName: "Sport elektronikasi", uzSlug: "aksessuar-elektronika" },
+  { parentSlug: "aksessuarlar", path: "kubkalar", uzName: "Kubkalar", uzSlug: "aksessuar-kubkalar" },
+  { parentSlug: "aksessuarlar", path: "medallar", uzName: "Medallar", uzSlug: "aksessuar-medallar" },
 ];
 
-const TRANSLIT: Record<string, string> = {
-  а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "e", ж: "zh", з: "z",
-  и: "i", й: "y", к: "k", л: "l", м: "m", н: "n", о: "o", п: "p", р: "r",
-  с: "s", т: "t", у: "u", ф: "f", х: "kh", ц: "ts", ч: "ch", ш: "sh",
-  щ: "shch", ъ: "", ы: "y", ь: "", э: "e", ю: "yu", я: "ya",
-};
-
-function transliterate(text: string) {
-  return text
-    .toLowerCase()
-    .split("")
-    .map((ch) => TRANSLIT[ch] ?? ch)
-    .join("");
-}
-
-function toSlug(text: string) {
-  return slugify(transliterate(text));
+function toSlug(text: string, fallback: string) {
+  const s = slugify(text);
+  return s || slugify(fallback);
 }
 
 function parsePrice(text: string) {
@@ -81,7 +102,7 @@ function sleep(ms: number) {
 }
 
 async function fetchHtml(path: string) {
-  const url = path.startsWith("http") ? path : `${SITE}/${encodeURIComponent(path)}`;
+  const url = path.startsWith("http") ? path : `${SITE}/${path}`;
   const res = await fetch(url, {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; FlexsportImportBot/1.0)" },
   });
@@ -167,8 +188,8 @@ function parseProductPage(html: string): ProductDetail {
     const title = $(el).find(".option-title").text().trim().toLowerCase();
     const select = $(el).find("select.additional-cart-params");
     if (select.length === 0) return;
-    const isSize = title.includes("размер");
-    const isColor = title.includes("цвет");
+    const isSize = title.includes("o'lcham") || title.includes("razmer") || title.includes("размер");
+    const isColor = title.includes("rang") || title.includes("цвет");
     if (!isSize && !isColor) return;
     select.find("option").each((_, opt) => {
       const value = $(opt).text().trim();
@@ -239,18 +260,17 @@ async function main() {
       stats.categories++;
     }
 
-    console.log(`\n=== ${job.ruPath} -> ${job.uzName} ===`);
+    console.log(`\n=== ${job.path} -> ${job.parentSlug}/${job.uzName} ===`);
 
     let page = 1;
     const listingItems: ListingProduct[] = [];
-    // Pilot cap: stop after 3 pages per subcategory to keep the run bounded.
-    while (page <= 3) {
-      const path = page === 1 ? job.ruPath : `${job.ruPath}/p/${page}`;
+    while (page <= MAX_PAGES_PER_SUBCATEGORY) {
+      const path = page === 1 ? job.path : `${job.path}/p/${page}`;
       let html: string;
       try {
         html = await fetchHtml(path);
       } catch (e) {
-        console.error(`Listing sahifasi yuklanmadi: ${path}`, e);
+        console.error(`  Listing sahifasi yuklanmadi: ${path}`, (e as Error).message);
         break;
       }
       const items = parseListingPage(html);
@@ -264,7 +284,7 @@ async function main() {
 
     for (const item of listingItems) {
       try {
-        const slug = toSlug(item.name);
+        const slug = toSlug(item.name, item.href);
 
         const { data: existing } = await supabase
           .from("products")
@@ -346,16 +366,16 @@ async function main() {
             });
             sortOrder++;
             stats.images++;
-            await sleep(150);
+            await sleep(120);
           } catch (e) {
-            console.error(`  Rasm yuklanmadi: ${imgUrl}`, e);
+            console.error(`  Rasm yuklanmadi: ${imgUrl}`, (e as Error).message);
           }
         }
 
         stats.products++;
         console.log(`  + ${detail.name || item.name} (${price} so'm, ${sortOrder} rasm)`);
       } catch (e) {
-        console.error(`  Xato: ${item.name}`, e);
+        console.error(`  Xato: ${item.name}`, (e as Error).message);
         stats.errors++;
       }
     }
