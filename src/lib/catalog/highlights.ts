@@ -37,6 +37,7 @@ function mapProduct(
     originalPrice: effective.originalPrice,
     discountPercent: effective.discountPercent,
     hasStock: true,
+    lowStock: false,
   };
 }
 

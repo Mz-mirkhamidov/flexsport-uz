@@ -201,6 +201,19 @@ export async function updateVariantStock(
     .from("product_variants")
     .update({ stock_qty: Number.isFinite(stockQty) ? stockQty : 0 })
     .eq("id", variantId);
+
+  const { data: variant } = await supabase
+    .from("product_variants")
+    .select("size, color, stock_qty, products(name, low_stock_threshold)")
+    .eq("id", variantId)
+    .single();
+  if (variant?.products && variant.stock_qty <= variant.products.low_stock_threshold) {
+    const { sendTelegramMessage } = await import("@/lib/telegram/bot");
+    const { lowStockMessage } = await import("@/lib/telegram/templates");
+    const label = [variant.size, variant.color].filter(Boolean).join(" / ") || null;
+    await sendTelegramMessage(lowStockMessage(variant.products.name, label, variant.stock_qty));
+  }
+
   revalidatePath(`/admin/products/${productId}/edit`);
   revalidatePath("/admin/inventory");
 }

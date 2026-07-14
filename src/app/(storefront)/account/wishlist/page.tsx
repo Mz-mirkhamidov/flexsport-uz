@@ -43,6 +43,7 @@ export default async function AccountWishlistPage() {
         originalPrice: effective.originalPrice,
         discountPercent: effective.discountPercent,
         hasStock: true,
+        lowStock: false,
       };
     });
 

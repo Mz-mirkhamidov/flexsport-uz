@@ -36,6 +36,11 @@ export function ProductCard({ product }: { product: ProductListItem }) {
             Tugagan
           </span>
         )}
+        {product.hasStock && product.lowStock && (
+          <span className="absolute right-2 top-2 rounded bg-orange-500 px-2 py-0.5 text-xs font-semibold text-white">
+            Kam qoldi
+          </span>
+        )}
       </div>
       <div className="flex flex-col">
         {product.brand && (

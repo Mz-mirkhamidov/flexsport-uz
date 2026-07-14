@@ -13,6 +13,7 @@ export type ProductListItem = {
   originalPrice: number | null;
   discountPercent: number | null;
   hasStock: boolean;
+  lowStock: boolean;
 };
 
 export type ProductListFilters = {
@@ -127,7 +128,7 @@ export async function queryProducts(
   let query = supabase
     .from("products")
     .select(
-      "id, slug, name, base_price, discount_pct, category_id, brands(name), product_images(url, sort_order), product_variants(stock_qty)",
+      "id, slug, name, base_price, discount_pct, category_id, low_stock_threshold, brands(name), product_images(url, sort_order), product_variants(stock_qty)",
       { count: "exact" },
     )
     .eq("is_active", true);
@@ -194,6 +195,9 @@ export async function queryProducts(
       originalPrice: effective.originalPrice,
       discountPercent: effective.discountPercent,
       hasStock: (p.product_variants ?? []).some((v) => v.stock_qty > 0),
+      lowStock: (p.product_variants ?? []).some(
+        (v) => v.stock_qty > 0 && v.stock_qty <= p.low_stock_threshold,
+      ),
     };
   });
 
