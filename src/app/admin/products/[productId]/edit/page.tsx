@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { VariantsSection } from "@/components/admin/VariantsSection";
 import { ImagesSection } from "@/components/admin/ImagesSection";
+import { PageHeader } from "@/components/admin/ui/PageHeader";
 
 export default async function EditProductPage({
   params,
@@ -37,19 +38,19 @@ export default async function EditProductPage({
   return (
     <div className="flex flex-col gap-10">
       <div>
-        <h1 className="mb-6 text-2xl font-bold">Mahsulotni tahrirlash</h1>
+        <PageHeader title="Mahsulotni tahrirlash" subtitle={product.name} />
         <div className="max-w-2xl">
           <ProductForm categories={categories ?? []} product={product} />
         </div>
       </div>
 
       <div>
-        <h2 className="mb-3 text-lg font-semibold">Variantlar</h2>
+        <h2 className="mb-3 text-lg font-semibold text-gray-900">Variantlar</h2>
         <VariantsSection productId={productId} variants={variants ?? []} />
       </div>
 
       <div>
-        <h2 className="mb-3 text-lg font-semibold">Rasmlar</h2>
+        <h2 className="mb-3 text-lg font-semibold text-gray-900">Rasmlar</h2>
         <ImagesSection productId={productId} images={images ?? []} />
       </div>
     </div>

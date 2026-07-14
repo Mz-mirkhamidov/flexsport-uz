@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { PageHeader } from "@/components/admin/ui/PageHeader";
 
 export default async function NewProductPage() {
   const supabase = await createClient();
@@ -10,7 +11,7 @@ export default async function NewProductPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">Yangi mahsulot</h1>
+      <PageHeader title="Yangi mahsulot" />
       <div className="max-w-2xl">
         <ProductForm categories={categories ?? []} />
       </div>

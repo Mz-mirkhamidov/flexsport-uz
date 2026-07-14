@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { approveReview, deleteReview } from "@/actions/reviews";
 import { DeleteButton } from "@/components/admin/DeleteButton";
+import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { Card, CardHeader } from "@/components/admin/ui/Card";
+import { EmptyState } from "@/components/admin/ui/EmptyState";
 
 export default async function AdminReviewsPage() {
   const supabase = await createClient();
@@ -14,63 +17,58 @@ export default async function AdminReviewsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-2xl font-bold">Sharhlar</h1>
+      <PageHeader title="Sharhlar" subtitle={`${(reviews ?? []).length} ta sharh`} />
 
       <div>
-        <h2 className="mb-3 text-lg font-semibold">
-          Tasdiqlashni kutmoqda ({pending.length})
-        </h2>
+        <CardHeader title={`Tasdiqlashni kutmoqda (${pending.length})`} />
         <div className="flex flex-col gap-3">
           {pending.map((r) => (
-            <div key={r.id} className="rounded border border-black/10 p-3">
+            <Card key={r.id}>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-medium">{r.products?.name}</span>
-                  <span className="ml-2 text-xs text-black/50">
+                  <span className="font-medium text-gray-900">{r.products?.name}</span>
+                  <span className="ml-2 text-xs text-gray-400">
                     {r.profiles?.full_name ?? r.profiles?.email}
                   </span>
                 </div>
                 <span className="text-[#8DC63F]">{"★".repeat(r.rating)}</span>
               </div>
-              {r.text && <p className="mt-1 text-sm text-black/70">{r.text}</p>}
-              <div className="mt-2 flex gap-3">
+              {r.text && <p className="mt-1 text-sm text-gray-600">{r.text}</p>}
+              <div className="mt-3 flex gap-4">
                 <form action={approveReview.bind(null, r.id)}>
-                  <button type="submit" className="text-sm text-[#8DC63F] hover:underline">
+                  <button type="submit" className="text-sm font-medium text-[#4d7a1a] hover:underline">
                     Tasdiqlash
                   </button>
                 </form>
                 <DeleteButton action={deleteReview.bind(null, r.id)} confirmMessage="Sharhni o'chirasizmi?" />
               </div>
-            </div>
+            </Card>
           ))}
-          {pending.length === 0 && (
-            <p className="text-sm text-black/50">Yangi sharhlar yo&apos;q</p>
-          )}
+          {pending.length === 0 && <EmptyState title="Yangi sharhlar yo'q" />}
         </div>
       </div>
 
       <div>
-        <h2 className="mb-3 text-lg font-semibold">
-          Tasdiqlangan ({approved.length})
-        </h2>
+        <CardHeader title={`Tasdiqlangan (${approved.length})`} />
         <div className="flex flex-col gap-3">
           {approved.map((r) => (
-            <div key={r.id} className="rounded border border-black/10 p-3">
+            <Card key={r.id}>
               <div className="flex items-center justify-between">
                 <div>
-                  <span className="font-medium">{r.products?.name}</span>
-                  <span className="ml-2 text-xs text-black/50">
+                  <span className="font-medium text-gray-900">{r.products?.name}</span>
+                  <span className="ml-2 text-xs text-gray-400">
                     {r.profiles?.full_name ?? r.profiles?.email}
                   </span>
                 </div>
                 <span className="text-[#8DC63F]">{"★".repeat(r.rating)}</span>
               </div>
-              {r.text && <p className="mt-1 text-sm text-black/70">{r.text}</p>}
-              <div className="mt-2">
+              {r.text && <p className="mt-1 text-sm text-gray-600">{r.text}</p>}
+              <div className="mt-3">
                 <DeleteButton action={deleteReview.bind(null, r.id)} confirmMessage="Sharhni o'chirasizmi?" />
               </div>
-            </div>
+            </Card>
           ))}
+          {approved.length === 0 && <EmptyState title="Hali tasdiqlangan sharh yo'q" />}
         </div>
       </div>
     </div>

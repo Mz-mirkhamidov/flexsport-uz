@@ -7,6 +7,11 @@ import {
   deleteVariant,
   updateVariantStock,
 } from "@/actions/admin/products";
+import { TableShell, Th, Td, Tr } from "@/components/admin/ui/Table";
+import { EmptyState } from "@/components/admin/ui/EmptyState";
+import { Input } from "@/components/admin/ui/Field";
+import { Button } from "@/components/admin/ui/Button";
+import { Badge } from "@/components/admin/ui/Badge";
 
 type Props = {
   productId: string;
@@ -21,123 +26,82 @@ export function VariantsSection({ productId, variants }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="overflow-x-auto rounded border border-black/10">
-        <table className="w-full text-sm">
-          <thead className="border-b border-black/10 bg-black/5 text-left">
-            <tr>
-              <th className="px-3 py-2">O&apos;lcham</th>
-              <th className="px-3 py-2">Rang</th>
-              <th className="px-3 py-2">Narx</th>
-              <th className="px-3 py-2">Qoldiq</th>
-              <th className="px-3 py-2">SKU</th>
-              <th className="px-3 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {variants.map((v) => (
-              <tr key={v.id} className="border-b border-black/5">
-                <td className="px-3 py-2">{v.size || "—"}</td>
-                <td className="px-3 py-2">{v.color || "—"}</td>
-                <td className="px-3 py-2">{v.price ?? "—"}</td>
-                <td className="px-3 py-2">
-                  <form
-                    action={updateVariantStock.bind(null, v.id, productId)}
-                    className="flex items-center gap-2"
-                  >
-                    <input
-                      type="number"
-                      name="stockQty"
-                      defaultValue={v.stock_qty}
-                      min={0}
-                      className="w-20 rounded border border-black/20 px-2 py-1"
-                    />
-                    <button
-                      type="submit"
-                      className="text-xs text-black/60 hover:underline"
-                    >
-                      Yangilash
-                    </button>
-                  </form>
-                </td>
-                <td className="px-3 py-2 text-black/50">{v.sku || "—"}</td>
-                <td className="px-3 py-2">
-                  <form action={deleteVariant.bind(null, v.id, productId)}>
-                    <button
-                      type="submit"
-                      className="text-xs text-red-600 hover:underline"
-                    >
-                      O&apos;chirish
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            ))}
-            {variants.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-3 py-4 text-center text-black/50">
-                  Variant qo&apos;shilmagan
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <TableShell>
+        <thead>
+          <tr>
+            <Th>O&apos;lcham</Th>
+            <Th>Rang</Th>
+            <Th>Narx</Th>
+            <Th>Qoldiq</Th>
+            <Th>SKU</Th>
+            <Th></Th>
+          </tr>
+        </thead>
+        <tbody>
+          {variants.map((v) => (
+            <Tr key={v.id}>
+              <Td>{v.size || "—"}</Td>
+              <Td>{v.color || "—"}</Td>
+              <Td>{v.price ?? "—"}</Td>
+              <Td>
+                <form
+                  action={updateVariantStock.bind(null, v.id, productId)}
+                  className="flex items-center gap-2"
+                >
+                  <Input
+                    type="number"
+                    name="stockQty"
+                    defaultValue={v.stock_qty}
+                    min={0}
+                    className="w-20 py-1"
+                  />
+                  {v.stock_qty === 0 && <Badge tone="red">Tugagan</Badge>}
+                  <button type="submit" className="text-xs font-medium text-gray-500 hover:text-gray-900">
+                    Yangilash
+                  </button>
+                </form>
+              </Td>
+              <Td className="text-gray-400">{v.sku || "—"}</Td>
+              <Td>
+                <form action={deleteVariant.bind(null, v.id, productId)}>
+                  <button type="submit" className="text-xs font-medium text-red-600 hover:underline">
+                    O&apos;chirish
+                  </button>
+                </form>
+              </Td>
+            </Tr>
+          ))}
+          {variants.length === 0 && <EmptyState title="Variant qo'shilmagan" colSpan={6} />}
+        </tbody>
+      </TableShell>
 
       <form
         action={formAction}
-        className="flex flex-wrap items-end gap-3 rounded border border-black/10 p-3"
+        className="flex flex-wrap items-end gap-3 rounded-xl border border-gray-200 bg-white p-4"
       >
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-black/60">O&apos;lcham</label>
-          <input
-            name="size"
-            type="text"
-            className="w-24 rounded border border-black/20 px-2 py-1 text-sm"
-          />
+          <label className="text-xs font-medium text-gray-500">O&apos;lcham</label>
+          <Input name="size" type="text" className="w-24 py-1.5" />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-black/60">Rang</label>
-          <input
-            name="color"
-            type="text"
-            className="w-24 rounded border border-black/20 px-2 py-1 text-sm"
-          />
+          <label className="text-xs font-medium text-gray-500">Rang</label>
+          <Input name="color" type="text" className="w-24 py-1.5" />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-black/60">Narx (ixtiyoriy)</label>
-          <input
-            name="price"
-            type="number"
-            step="0.01"
-            min={0}
-            className="w-28 rounded border border-black/20 px-2 py-1 text-sm"
-          />
+          <label className="text-xs font-medium text-gray-500">Narx (ixtiyoriy)</label>
+          <Input name="price" type="number" step="0.01" min={0} className="w-28 py-1.5" />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-black/60">Qoldiq</label>
-          <input
-            name="stockQty"
-            type="number"
-            min={0}
-            defaultValue={0}
-            className="w-20 rounded border border-black/20 px-2 py-1 text-sm"
-          />
+          <label className="text-xs font-medium text-gray-500">Qoldiq</label>
+          <Input name="stockQty" type="number" min={0} defaultValue={0} className="w-20 py-1.5" />
         </div>
         <div className="flex flex-col gap-1">
-          <label className="text-xs text-black/60">SKU</label>
-          <input
-            name="sku"
-            type="text"
-            className="w-28 rounded border border-black/20 px-2 py-1 text-sm"
-          />
+          <label className="text-xs font-medium text-gray-500">SKU</label>
+          <Input name="sku" type="text" className="w-28 py-1.5" />
         </div>
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded bg-black px-3 py-1.5 text-sm font-medium text-white hover:bg-[#8DC63F] disabled:opacity-60"
-        >
+        <Button type="submit" variant="secondary" disabled={pending}>
           {pending ? "Qo'shilmoqda..." : "Variant qo'shish"}
-        </button>
+        </Button>
       </form>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
     </div>

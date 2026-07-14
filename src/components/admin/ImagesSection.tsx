@@ -6,6 +6,7 @@ import {
   deleteProductImage,
   uploadProductImage,
 } from "@/actions/admin/products";
+import { Button } from "@/components/admin/ui/Button";
 
 type Props = {
   productId: string;
@@ -32,17 +33,19 @@ export function ImagesSection({ productId, images }: Props) {
           .slice()
           .sort((a, b) => a.sort_order - b.sort_order)
           .map((img) => (
-            <div key={img.id} className="flex flex-col items-center gap-2">
+            <div
+              key={img.id}
+              className="group relative h-28 w-28 overflow-hidden rounded-xl border border-gray-200"
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={img.url}
-                alt={img.alt_text ?? ""}
-                className="h-28 w-28 rounded border border-black/10 object-cover"
-              />
-              <form action={deleteProductImage.bind(null, img.id, productId)}>
+              <img src={img.url} alt={img.alt_text ?? ""} className="h-full w-full object-cover" />
+              <form
+                action={deleteProductImage.bind(null, img.id, productId)}
+                className="absolute inset-0 flex items-end justify-center bg-black/0 opacity-0 transition group-hover:bg-black/40 group-hover:opacity-100"
+              >
                 <button
                   type="submit"
-                  className="text-xs text-red-600 hover:underline"
+                  className="mb-2 rounded-full bg-white px-3 py-1 text-xs font-medium text-red-600 shadow"
                 >
                   O&apos;chirish
                 </button>
@@ -50,29 +53,25 @@ export function ImagesSection({ productId, images }: Props) {
             </div>
           ))}
         {images.length === 0 && (
-          <p className="text-sm text-black/50">Rasm yuklanmagan</p>
+          <p className="text-sm text-gray-400">Rasm yuklanmagan</p>
         )}
       </div>
 
       <form
         ref={formRef}
         action={formAction}
-        className="flex items-center gap-3 rounded border border-black/10 p-3"
+        className="flex items-center gap-3 rounded-xl border border-dashed border-gray-300 bg-gray-50/50 p-4"
       >
         <input
           type="file"
           name="file"
           accept="image/*"
           required
-          className="text-sm"
+          className="text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-gray-900 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-white hover:file:bg-[#8DC63F] hover:file:text-gray-900"
         />
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded bg-black px-3 py-1.5 text-sm font-medium text-white hover:bg-[#8DC63F] disabled:opacity-60"
-        >
+        <Button type="submit" variant="secondary" disabled={pending}>
           {pending ? "Yuklanmoqda..." : "Rasm yuklash"}
-        </button>
+        </Button>
       </form>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
     </div>

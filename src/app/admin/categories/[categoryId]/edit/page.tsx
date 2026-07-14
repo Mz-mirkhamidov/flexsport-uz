@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CategoryForm } from "@/components/admin/CategoryForm";
+import { PageHeader } from "@/components/admin/ui/PageHeader";
 
 export default async function EditCategoryPage({
   params,
@@ -19,7 +20,7 @@ export default async function EditCategoryPage({
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">Kategoriyani tahrirlash</h1>
+      <PageHeader title="Kategoriyani tahrirlash" subtitle={category.name} />
       <div className="max-w-md">
         <CategoryForm categories={categories ?? []} category={category} />
       </div>

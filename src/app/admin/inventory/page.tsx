@@ -1,13 +1,21 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { updateVariantStock } from "@/actions/admin/products";
+import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { TableShell, Th, Td, Tr } from "@/components/admin/ui/Table";
+import { EmptyState } from "@/components/admin/ui/EmptyState";
+import { Badge } from "@/components/admin/ui/Badge";
+import { Input } from "@/components/admin/ui/Field";
+
+const PAGE_SIZE = 50;
 
 export default async function AdminInventoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ low?: string }>;
+  searchParams: Promise<{ low?: string; page?: string }>;
 }) {
-  const { low } = await searchParams;
+  const { low, page: pageParam } = await searchParams;
+  const page = Number(pageParam) || 1;
   const supabase = await createClient();
 
   const { data: variants } = await supabase
@@ -20,90 +28,120 @@ export default async function AdminInventoryPage({
     ? rows.filter((v) => v.stock_qty <= (v.products?.low_stock_threshold ?? 5))
     : rows;
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const from = (page - 1) * PAGE_SIZE;
+  const paged = filtered.slice(from, from + PAGE_SIZE);
+  const lowCount = rows.filter(
+    (v) => v.stock_qty <= (v.products?.low_stock_threshold ?? 5),
+  ).length;
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Ombor</h1>
-        <div className="flex gap-2 text-sm">
-          <Link
-            href="/admin/inventory"
-            className={`rounded-full border px-3 py-1 ${!low ? "border-black bg-black text-white" : "border-black/20"}`}
-          >
-            Barchasi
-          </Link>
-          <Link
-            href="/admin/inventory?low=1"
-            className={`rounded-full border px-3 py-1 ${low ? "border-black bg-black text-white" : "border-black/20"}`}
-          >
-            Kam qolganlar
-          </Link>
-        </div>
+      <PageHeader
+        title="Ombor"
+        subtitle={`${rows.length} ta variant, shundan ${lowCount} tasi kam qolgan`}
+      />
+
+      <div className="flex flex-wrap gap-2 text-sm">
+        <Link
+          href="/admin/inventory"
+          className={`rounded-full border px-3 py-1.5 font-medium transition ${
+            !low
+              ? "border-gray-900 bg-gray-900 text-white"
+              : "border-gray-200 text-gray-600 hover:border-gray-400"
+          }`}
+        >
+          Barchasi
+        </Link>
+        <Link
+          href="/admin/inventory?low=1"
+          className={`rounded-full border px-3 py-1.5 font-medium transition ${
+            low
+              ? "border-gray-900 bg-gray-900 text-white"
+              : "border-gray-200 text-gray-600 hover:border-gray-400"
+          }`}
+        >
+          Kam qolganlar ({lowCount})
+        </Link>
       </div>
 
-      <div className="overflow-x-auto rounded border border-black/10 bg-white">
-        <table className="w-full text-sm">
-          <thead className="border-b border-black/10 bg-black/5 text-left">
-            <tr>
-              <th className="px-4 py-2">Mahsulot</th>
-              <th className="px-4 py-2">Variant</th>
-              <th className="px-4 py-2">Qoldiq</th>
-              <th className="px-4 py-2">Chegara</th>
-              <th className="px-4 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {filtered.map((v) => {
-              const threshold = v.products?.low_stock_threshold ?? 5;
-              const isLow = v.stock_qty <= threshold;
-              return (
-                <tr key={v.id} className="border-b border-black/5">
-                  <td className="px-4 py-2">
-                    <Link
-                      href={`/admin/products/${v.products?.id}/edit`}
-                      className="hover:underline"
-                    >
-                      {v.products?.name}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2 text-black/60">
-                    {[v.size, v.color].filter(Boolean).join(" / ") || "Standart"}
-                  </td>
-                  <td className="px-4 py-2">
-                    <span className={isLow ? "font-semibold text-red-600" : ""}>
-                      {v.stock_qty}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-black/50">{threshold}</td>
-                  <td className="px-4 py-2">
-                    <form
-                      action={updateVariantStock.bind(null, v.id, v.products!.id)}
-                      className="flex items-center gap-2"
-                    >
-                      <input
-                        type="number"
-                        name="stockQty"
-                        defaultValue={v.stock_qty}
-                        min={0}
-                        className="w-20 rounded border border-black/20 px-2 py-1"
-                      />
-                      <button type="submit" className="text-xs text-black/60 hover:underline">
-                        Yangilash
-                      </button>
-                    </form>
-                  </td>
-                </tr>
-              );
-            })}
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-black/50">
-                  Hech narsa topilmadi
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <TableShell>
+        <thead>
+          <tr>
+            <Th>Mahsulot</Th>
+            <Th>Variant</Th>
+            <Th>Qoldiq</Th>
+            <Th>Chegara</Th>
+            <Th></Th>
+          </tr>
+        </thead>
+        <tbody>
+          {paged.map((v) => {
+            const threshold = v.products?.low_stock_threshold ?? 5;
+            const isLow = v.stock_qty <= threshold;
+            return (
+              <Tr key={v.id}>
+                <Td>
+                  <Link
+                    href={`/admin/products/${v.products?.id}/edit`}
+                    className="font-medium text-gray-900 hover:text-[#4d7a1a]"
+                  >
+                    {v.products?.name}
+                  </Link>
+                </Td>
+                <Td>{[v.size, v.color].filter(Boolean).join(" / ") || "Standart"}</Td>
+                <Td>
+                  {isLow ? (
+                    <Badge tone={v.stock_qty === 0 ? "red" : "amber"}>{v.stock_qty} dona</Badge>
+                  ) : (
+                    <span className="text-gray-700">{v.stock_qty} dona</span>
+                  )}
+                </Td>
+                <Td className="text-gray-400">{threshold}</Td>
+                <Td>
+                  <form
+                    action={updateVariantStock.bind(null, v.id, v.products!.id)}
+                    className="flex items-center gap-2"
+                  >
+                    <Input
+                      type="number"
+                      name="stockQty"
+                      defaultValue={v.stock_qty}
+                      min={0}
+                      className="w-20 py-1"
+                    />
+                    <button type="submit" className="text-xs font-medium text-gray-500 hover:text-gray-900">
+                      Yangilash
+                    </button>
+                  </form>
+                </Td>
+              </Tr>
+            );
+          })}
+          {paged.length === 0 && <EmptyState title="Hech narsa topilmadi" colSpan={5} />}
+        </tbody>
+      </TableShell>
+
+      {totalPages > 1 && (
+        <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+            <Link
+              key={p}
+              href={`/admin/inventory?${new URLSearchParams({
+                ...(low ? { low } : {}),
+                page: String(p),
+              }).toString()}`}
+              className={`rounded-lg px-3 py-1.5 ${
+                p === page
+                  ? "bg-gray-900 text-white"
+                  : "border border-gray-200 text-gray-600 hover:border-gray-400"
+              }`}
+            >
+              {p}
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

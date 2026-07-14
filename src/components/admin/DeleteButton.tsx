@@ -17,7 +17,7 @@ export function DeleteButton({ action, confirmMessage }: Props) {
     >
       <button
         type="submit"
-        className="text-sm text-red-600 hover:underline"
+        className="text-sm font-medium text-red-600 hover:underline"
       >
         O&apos;chirish
       </button>

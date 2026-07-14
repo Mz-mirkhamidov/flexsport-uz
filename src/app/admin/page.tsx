@@ -1,4 +1,10 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { PageHeader } from "@/components/admin/ui/PageHeader";
+import { Card, CardHeader } from "@/components/admin/ui/Card";
+import { StatCard } from "@/components/admin/ui/StatCard";
+import { OrderStatusBadge } from "@/components/admin/ui/Badge";
+import { EmptyState } from "@/components/admin/ui/EmptyState";
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat("uz-UZ").format(value) + " so'm";
@@ -8,6 +14,23 @@ function startOfDay(d: Date) {
   const copy = new Date(d);
   copy.setHours(0, 0, 0, 0);
   return copy;
+}
+
+function RevenueIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+      <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  );
+}
+
+function OrdersStatIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-4 w-4">
+      <path d="M6 2 4 5v15a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V5l-2-3Z" />
+      <path d="M4 5h16" />
+    </svg>
+  );
 }
 
 export default async function AdminDashboardPage() {
@@ -70,6 +93,7 @@ export default async function AdminDashboardPage() {
   const topProducts = [...salesByProduct.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
+  const maxTopQty = Math.max(1, ...topProducts.map(([, qty]) => qty));
 
   const dailyRevenue: { date: string; total: number }[] = [];
   for (let i = 6; i >= 0; i--) {
@@ -88,103 +112,104 @@ export default async function AdminDashboardPage() {
   }
   const maxDaily = Math.max(1, ...dailyRevenue.map((d) => d.total));
 
-  const STATUS_LABELS: Record<string, string> = {
-    received: "Qabul qilindi",
-    preparing: "Tayyorlanmoqda",
-    in_transit: "Yo'lda",
-    delivered: "Yetkazildi",
-    cancelled: "Bekor qilindi",
-  };
-
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-2xl font-bold">Dashboard</h1>
+      <PageHeader title="Dashboard" subtitle="Do'koningizning umumiy holati" />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        <div className="rounded border border-black/10 bg-white p-4">
-          <p className="text-xs text-black/50">Bugungi savdo</p>
-          <p className="mt-1 text-xl font-bold">{formatPrice(todayRevenue)}</p>
-        </div>
-        <div className="rounded border border-black/10 bg-white p-4">
-          <p className="text-xs text-black/50">Shu oy</p>
-          <p className="mt-1 text-xl font-bold">{formatPrice(monthRevenue)}</p>
-          <p className="text-xs text-black/40">
-            O&apos;tgan oy: {formatPrice(lastMonthRevenue)}
-          </p>
-        </div>
-        <div className="rounded border border-black/10 bg-white p-4">
-          <p className="text-xs text-black/50">Jami buyurtmalar</p>
-          <p className="mt-1 text-xl font-bold">{totalOrders ?? 0}</p>
-        </div>
-        <div className="rounded border border-black/10 bg-white p-4">
-          <p className="text-xs text-black/50">Jarayondagi buyurtmalar</p>
-          <p className="mt-1 text-xl font-bold">{pendingOrders ?? 0}</p>
-        </div>
+        <StatCard label="Bugungi savdo" value={formatPrice(todayRevenue)} icon={<RevenueIcon />} />
+        <StatCard
+          label="Shu oy"
+          value={formatPrice(monthRevenue)}
+          hint={`O'tgan oy: ${formatPrice(lastMonthRevenue)}`}
+          icon={<RevenueIcon />}
+        />
+        <StatCard label="Jami buyurtmalar" value={totalOrders ?? 0} icon={<OrdersStatIcon />} />
+        <StatCard
+          label="Jarayondagi"
+          value={pendingOrders ?? 0}
+          hint="Qabul qilindi / Tayyorlanmoqda / Yo'lda"
+          icon={<OrdersStatIcon />}
+        />
       </div>
 
-      <div>
-        <h2 className="mb-3 text-lg font-semibold">So&apos;nggi 7 kunlik savdo</h2>
-        <div className="flex h-40 items-end gap-3 rounded border border-black/10 bg-white p-4">
+      <Card>
+        <CardHeader title="So'nggi 7 kunlik savdo" />
+        <div className="flex h-40 items-end gap-3">
           {dailyRevenue.map((d) => (
-            <div key={d.date} className="flex flex-1 flex-col items-center gap-1">
-              <div
-                className="w-full rounded-t bg-[#8DC63F]"
-                style={{ height: `${Math.max(4, (d.total / maxDaily) * 100)}px` }}
-              />
-              <span className="text-[10px] text-black/50">{d.date}</span>
+            <div key={d.date} className="group flex flex-1 flex-col items-center gap-2">
+              <div className="relative flex w-full flex-1 items-end">
+                <div
+                  className="w-full rounded-t-md bg-[#8DC63F] transition group-hover:bg-gray-900"
+                  style={{ height: `${Math.max(4, (d.total / maxDaily) * 100)}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-medium text-gray-400">{d.date}</span>
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div>
-          <h2 className="mb-3 text-lg font-semibold">
-            Eng ko&apos;p sotilgan (30 kun)
-          </h2>
-          <div className="rounded border border-black/10 bg-white">
+        <Card padded={false}>
+          <div className="p-5 pb-0">
+            <CardHeader title="Eng ko'p sotilgan (30 kun)" />
+          </div>
+          <div className="px-5 pb-5">
             {topProducts.length === 0 ? (
-              <p className="p-4 text-sm text-black/50">Hali sotuv yo&apos;q</p>
+              <EmptyState title="Hali sotuv yo'q" />
             ) : (
-              topProducts.map(([name, qty]) => (
-                <div
-                  key={name}
-                  className="flex items-center justify-between border-b border-black/5 px-4 py-2 text-sm last:border-0"
-                >
-                  <span>{name}</span>
-                  <span className="font-semibold">{qty} dona</span>
-                </div>
-              ))
+              <div className="flex flex-col gap-3">
+                {topProducts.map(([name, qty]) => (
+                  <div key={name} className="flex items-center gap-3 text-sm">
+                    <span className="flex-1 truncate text-gray-700">{name}</span>
+                    <div className="h-1.5 w-24 overflow-hidden rounded-full bg-gray-100">
+                      <div
+                        className="h-full rounded-full bg-[#8DC63F]"
+                        style={{ width: `${(qty / maxTopQty) * 100}%` }}
+                      />
+                    </div>
+                    <span className="w-14 shrink-0 text-right font-semibold text-gray-900">
+                      {qty} dona
+                    </span>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
-        </div>
+        </Card>
 
-        <div>
-          <h2 className="mb-3 text-lg font-semibold">So&apos;nggi buyurtmalar</h2>
-          <div className="rounded border border-black/10 bg-white">
+        <Card padded={false}>
+          <div className="p-5 pb-0">
+            <CardHeader title="So'nggi buyurtmalar" />
+          </div>
+          <div className="px-5 pb-5">
             {(recentOrders ?? []).length === 0 ? (
-              <p className="p-4 text-sm text-black/50">Hali buyurtma yo&apos;q</p>
+              <EmptyState title="Hali buyurtma yo'q" />
             ) : (
-              (recentOrders ?? []).map((o) => (
-                <div
-                  key={o.id}
-                  className="flex items-center justify-between border-b border-black/5 px-4 py-2 text-sm last:border-0"
-                >
-                  <div>
-                    <span className="font-medium">№ {o.order_number}</span>
-                    <span className="ml-2 text-black/50">{o.ship_full_name}</span>
-                  </div>
-                  <div className="text-right">
-                    <p>{formatPrice(Number(o.total_amount))}</p>
-                    <p className="text-xs text-black/50">
-                      {STATUS_LABELS[o.status] ?? o.status}
-                    </p>
-                  </div>
-                </div>
-              ))
+              <div className="flex flex-col divide-y divide-gray-100">
+                {(recentOrders ?? []).map((o) => (
+                  <Link
+                    key={o.id}
+                    href={`/admin/orders/${o.id}`}
+                    className="flex items-center justify-between gap-3 py-3 text-sm first:pt-0 last:pb-0 hover:text-gray-900"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium text-gray-900">№ {o.order_number}</p>
+                      <p className="truncate text-gray-500">{o.ship_full_name}</p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="font-semibold text-gray-900">
+                        {formatPrice(Number(o.total_amount))}
+                      </p>
+                      <OrderStatusBadge status={o.status} />
+                    </div>
+                  </Link>
+                ))}
+              </div>
             )}
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

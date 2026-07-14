@@ -1,65 +1,71 @@
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import { logout } from "@/actions/auth";
+import { AdminSidebarNav } from "@/components/admin/AdminSidebarNav";
+import { LogoutIcon, StorefrontIcon } from "@/components/admin/ui/icons";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", user.id)
+        .single()
+    : { data: null };
+
   return (
-    <div className="flex min-h-full">
-      <aside className="w-56 shrink-0 border-r border-black/10 bg-black text-white">
-        <div className="px-4 py-5 text-lg font-bold">
-          FLEX<span className="text-[#8DC63F]">SPORT</span> Admin
+    <div className="flex min-h-full bg-gray-50">
+      <aside className="flex w-64 shrink-0 flex-col bg-gray-950">
+        <div className="px-5 py-6">
+          <Link href="/admin" className="text-lg font-bold text-white">
+            FLEX<span className="text-[#8DC63F]">SPORT</span>
+          </Link>
+          <p className="mt-0.5 text-xs text-gray-500">Admin panel</p>
         </div>
-        <nav className="flex flex-col gap-1 px-2 text-sm">
-          <Link href="/admin" className="rounded px-3 py-2 hover:bg-white/10">
-            Dashboard
-          </Link>
-          <Link
-            href="/admin/products"
-            className="rounded px-3 py-2 hover:bg-white/10"
-          >
-            Mahsulotlar
-          </Link>
-          <Link
-            href="/admin/categories"
-            className="rounded px-3 py-2 hover:bg-white/10"
-          >
-            Kategoriyalar
-          </Link>
-          <Link
-            href="/admin/orders"
-            className="rounded px-3 py-2 hover:bg-white/10"
-          >
-            Buyurtmalar
-          </Link>
-          <Link
-            href="/admin/inventory"
-            className="rounded px-3 py-2 hover:bg-white/10"
-          >
-            Ombor
-          </Link>
-          <Link
-            href="/admin/discounts"
-            className="rounded px-3 py-2 hover:bg-white/10"
-          >
-            Skidkalar
-          </Link>
-          <Link
-            href="/admin/reviews"
-            className="rounded px-3 py-2 hover:bg-white/10"
-          >
-            Sharhlar
-          </Link>
-          <Link
-            href="/admin/settings"
-            className="rounded px-3 py-2 hover:bg-white/10"
-          >
-            Sozlamalar
-          </Link>
-        </nav>
+        <div className="flex-1 overflow-y-auto pb-4">
+          <AdminSidebarNav />
+        </div>
+        <div className="border-t border-white/10 px-3 py-4">
+          <div className="flex items-center gap-3 rounded-lg px-3 py-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#8DC63F]/20 text-sm font-semibold text-[#8DC63F]">
+              {(profile?.full_name ?? profile?.email ?? "A").charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-white">
+                {profile?.full_name ?? "Admin"}
+              </p>
+              <p className="truncate text-xs text-gray-500">{profile?.email}</p>
+            </div>
+          </div>
+          <div className="mt-1 flex flex-col gap-0.5">
+            <Link
+              href="/"
+              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-400 hover:bg-white/5 hover:text-white"
+            >
+              <StorefrontIcon className="h-4 w-4" />
+              Saytni ko&apos;rish
+            </Link>
+            <form action={logout}>
+              <button
+                type="submit"
+                className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-gray-400 hover:bg-white/5 hover:text-white"
+              >
+                <LogoutIcon className="h-4 w-4" />
+                Chiqish
+              </button>
+            </form>
+          </div>
+        </div>
       </aside>
-      <main className="flex-1 bg-black/[.02] p-6">{children}</main>
+      <main className="flex-1 overflow-x-hidden p-8">{children}</main>
     </div>
   );
 }

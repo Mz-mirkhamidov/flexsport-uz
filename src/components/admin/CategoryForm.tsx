@@ -3,6 +3,8 @@
 import { useActionState } from "react";
 import type { Tables } from "@/types/database.types";
 import { createCategory, updateCategory } from "@/actions/admin/categories";
+import { FieldGroup, Input, Label, Select } from "@/components/admin/ui/Field";
+import { Button } from "@/components/admin/ui/Button";
 
 type Props = {
   categories: Tables<"categories">[];
@@ -16,42 +18,21 @@ export function CategoryForm({ categories, category }: Props) {
   const [state, formAction, pending] = useActionState(action, null);
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded border border-black/10 p-4">
-      <div className="flex flex-col gap-1">
-        <label htmlFor="name" className="text-sm font-medium">
-          Nomi
-        </label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          required
-          defaultValue={category?.name}
-          className="rounded border border-black/20 px-3 py-2 text-sm outline-none focus:border-[#8DC63F]"
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="slug" className="text-sm font-medium">
-          Slug (bo&apos;sh qoldirsangiz, nomidan avtomatik yasaladi)
-        </label>
-        <input
-          id="slug"
-          name="slug"
-          type="text"
-          defaultValue={category?.slug}
-          className="rounded border border-black/20 px-3 py-2 text-sm outline-none focus:border-[#8DC63F]"
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="parentId" className="text-sm font-medium">
-          Ota-kategoriya (ixtiyoriy)
-        </label>
-        <select
-          id="parentId"
-          name="parentId"
-          defaultValue={category?.parent_id ?? ""}
-          className="rounded border border-black/20 px-3 py-2 text-sm outline-none focus:border-[#8DC63F]"
-        >
+    <form
+      action={formAction}
+      className="flex flex-col gap-4 rounded-xl border border-gray-200 bg-white p-5 shadow-sm"
+    >
+      <FieldGroup>
+        <Label htmlFor="name">Nomi</Label>
+        <Input id="name" name="name" type="text" required defaultValue={category?.name} />
+      </FieldGroup>
+      <FieldGroup>
+        <Label htmlFor="slug">Slug (bo&apos;sh qoldirsangiz, nomidan avtomatik yasaladi)</Label>
+        <Input id="slug" name="slug" type="text" defaultValue={category?.slug} />
+      </FieldGroup>
+      <FieldGroup>
+        <Label htmlFor="parentId">Ota-kategoriya (ixtiyoriy)</Label>
+        <Select id="parentId" name="parentId" defaultValue={category?.parent_id ?? ""}>
           <option value="">— Top-daraja —</option>
           {categories
             .filter((c) => c.id !== category?.id)
@@ -60,36 +41,33 @@ export function CategoryForm({ categories, category }: Props) {
                 {c.name}
               </option>
             ))}
-        </select>
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="sortOrder" className="text-sm font-medium">
-          Tartib raqami
-        </label>
-        <input
+        </Select>
+      </FieldGroup>
+      <FieldGroup>
+        <Label htmlFor="sortOrder">Tartib raqami</Label>
+        <Input
           id="sortOrder"
           name="sortOrder"
           type="number"
           defaultValue={category?.sort_order ?? 0}
-          className="w-24 rounded border border-black/20 px-3 py-2 text-sm outline-none focus:border-[#8DC63F]"
+          className="w-24"
         />
-      </div>
-      <label className="flex items-center gap-2 text-sm">
+      </FieldGroup>
+      <label className="flex items-center gap-2 text-sm text-gray-700">
         <input
           type="checkbox"
           name="isActive"
           defaultChecked={category?.is_active ?? true}
+          className="h-4 w-4 rounded border-gray-300 text-[#8DC63F] focus:ring-[#8DC63F]"
         />
         Faol
       </label>
       {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
-      <button
-        type="submit"
-        disabled={pending}
-        className="self-start rounded bg-black px-4 py-2 text-sm font-medium text-white transition hover:bg-[#8DC63F] disabled:opacity-60"
-      >
-        {pending ? "Saqlanmoqda..." : category ? "Saqlash" : "Qo'shish"}
-      </button>
+      <div>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Saqlanmoqda..." : category ? "Saqlash" : "Qo'shish"}
+        </Button>
+      </div>
     </form>
   );
 }
