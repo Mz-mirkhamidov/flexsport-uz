@@ -19,18 +19,20 @@ export default async function SearchPage({
     : { items: [], total: 0 };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <form method="get" action="/search" className="mb-8 flex gap-2">
+    <div className="search-page">
+      <div className="catalog-title"><span>TEZ TOPING</span><h1>Qidiruv</h1><p>Mahsulot nomi, sport turi yoki brend bo‘yicha qidiring</p></div>
+      <form method="get" action="/search" className="search-form">
         <input
           type="text"
           name="q"
           defaultValue={q}
           placeholder="Mahsulot nomi yoki tegini qidiring..."
-          className="flex-1 rounded border border-black/20 px-4 py-2 text-sm outline-none focus:border-[#8DC63F]"
+          enterKeyHint="search"
+          className="search-input"
         />
         <button
           type="submit"
-          className="rounded bg-black px-5 py-2 text-sm font-medium text-white hover:bg-[#8DC63F]"
+          className="search-button"
         >
           Qidirish
         </button>
@@ -43,7 +45,7 @@ export default async function SearchPage({
       )}
 
       {items.length > 0 ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+        <div className="product-grid">
           {items.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
