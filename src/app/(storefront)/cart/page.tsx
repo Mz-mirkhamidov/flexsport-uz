@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { ShoppingCartSimple } from "@phosphor-icons/react";
 import {
   type CartItem,
   getCart,
@@ -28,7 +29,7 @@ export default function CartPage() {
   if (items.length === 0) {
     return (
       <div className="cart-empty">
-        <div className="empty-icon">▱</div>
+        <div className="empty-icon"><ShoppingCartSimple /></div>
         <h1 className="text-2xl font-bold">Savat</h1>
         <p className="mt-4 text-black/50">Savatingiz bo&apos;sh.</p>
         <Link

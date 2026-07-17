@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Barbell, BoxingGlove, CheckCircle, ClockCounterClockwise, Heart, PersonSimpleRun, ShieldCheck, ShoppingCartSimple, SoccerBall, Truck } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
-import { getBestsellers, getNewArrivals } from "@/lib/catalog/highlights";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import type { ProductListItem } from "@/lib/catalog/query";
 import { getCategoryIdsForSlug, queryProducts } from "@/lib/catalog/query";
@@ -43,7 +42,7 @@ function ProductRow({ title, products, href = "/search" }: { title: string; prod
         <Link href={href}>Barchasini ko‘rish <ArrowRight weight="bold" /></Link>
       </div>
       <div className="premium-products">
-        {products.slice(0, 8).map((product, index) => <ProductCard key={product.id} product={product} priority={index < 2} />)}
+        {products.slice(0, 4).map((product, index) => <ProductCard key={product.id} product={product} priority={index < 2} />)}
       </div>
     </section>
   );
@@ -51,9 +50,7 @@ function ProductRow({ title, products, href = "/search" }: { title: string; prod
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const [newArrivals, bestsellers, footballIds, fitnessIds] = await Promise.all([
-    getNewArrivals(supabase),
-    getBestsellers(supabase),
+  const [footballIds, fitnessIds] = await Promise.all([
     getCategoryIdsForSlug(supabase, "futbol"),
     getCategoryIdsForSlug(supabase, "fitnes-trenajyor"),
   ]);
@@ -61,10 +58,6 @@ export default async function HomePage() {
     queryProducts(supabase, { categoryIds: footballIds, pageSize: 8 }),
     queryProducts(supabase, { categoryIds: fitnessIds, pageSize: 8 }),
   ]);
-  const mixed = [football.items[0], fitness.items[0], football.items[1], fitness.items[1], ...newArrivals]
-    .filter((item): item is ProductListItem => Boolean(item) && !item.slug.includes("medal"));
-  const popular = bestsellers.filter((item) => !item.slug.includes("medal"));
-
   return (
     <div className="premium-home">
       <section className="premium-hero">
@@ -103,7 +96,6 @@ export default async function HomePage() {
         <div className="showcase-grid">{showcaseProducts.map((product, index) => <ShowcaseCard product={product} priority={index < 2} key={product.name} />)}</div>
       </section>
 
-      <ProductRow title="Do‘kondagi mashhur mahsulotlar" products={popular.length ? popular : mixed} />
       <section className="premium-manifesto">
         <div><CheckCircle weight="fill" /><span>FlexSport tanlovi</span></div>
         <h2>Sportni boshlash uchun<br /><em>ertani kutmang.</em></h2>
