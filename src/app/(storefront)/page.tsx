@@ -54,6 +54,9 @@ export default async function HomePage() {
     queryProducts(supabase, { categoryIds: tennisIds, pageSize: 4 }),
   ]);
   const diverse = [football.items[0], fitness.items[0], cycling.items[0], tennis.items[0], football.items[1], fitness.items[1], cycling.items[1], tennis.items[1]].filter(Boolean) as ProductListItem[];
+  const nonMedalBestsellers = bestsellers.filter((item) => !item.slug.includes("medal"));
+  const curatedBestsellers = nonMedalBestsellers.length >= 4 ? nonMedalBestsellers : diverse;
+  const curatedSale = onSale.filter((item) => !item.slug.includes("medal"));
   const collections: Collection[] = [
     { title: "Futbol formasi va butsalar", subtitle: "MAYDONGA TAYYOR", href: "/catalog/futbol", image: football.items[0]?.image ?? null, tone: "collection-dark" },
     { title: "Uy uchun fitness", subtitle: "KUCH VA NATIJA", href: "/catalog/fitnes-trenajyor", image: fitness.items[0]?.image ?? null, tone: "collection-lime" },
@@ -113,8 +116,8 @@ export default async function HomePage() {
       </section>
       <ProductRow eyebrow="FUTBOL UCHUN HAMMASI" title="Maydonga tayyor" products={football.items.slice(0, 8)} href="/catalog/futbol" />
       <ProductRow eyebrow="KUCHLI BO‘LING" title="Fitness va trenajyorlar" products={fitness.items.slice(0, 8)} href="/catalog/fitnes-trenajyor" />
-      <ProductRow eyebrow="MIJOZLAR TANLOVI" title="Ko‘p sotilganlar" products={bestsellers} />
-      <ProductRow eyebrow="FOYDALI NARXLAR" title="Chegirmadagi mahsulotlar" products={onSale} />
+      <ProductRow eyebrow="MIJOZLAR TANLOVI" title="Ko‘p sotilganlar" products={curatedBestsellers} />
+      <ProductRow eyebrow="FOYDALI NARXLAR" title="Chegirmadagi mahsulotlar" products={curatedSale} />
     </>
   );
 }
