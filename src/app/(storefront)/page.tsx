@@ -1,8 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { getBestsellers, getNewArrivals, getOnSale } from "@/lib/catalog/highlights";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import type { ProductListItem } from "@/lib/catalog/query";
+import { getCategoryIdsForSlug, queryProducts } from "@/lib/catalog/query";
 
 export const revalidate = 3600;
 
@@ -27,12 +29,37 @@ function ProductRow({ title, eyebrow, products, href = "/search" }: { title: str
   );
 }
 
+type Collection = { title: string; subtitle: string; href: string; image: string | null; tone: string };
+function CollectionGrid({ collections }: { collections: Collection[] }) {
+  return <section className="store-section curated"><div className="section-heading"><div><p>MEDAL EMAS — BUTUN SPORT OLAMI</p><h2>Maqsadingiz bo‘yicha tanlang</h2></div></div><div className="collection-grid">
+    {collections.map((item, index) => <Link href={item.href} className={`collection-card ${item.tone}`} key={item.title}>
+      {item.image && <Image src={item.image} alt="" fill sizes="(max-width:600px) 85vw, 40vw" className="collection-image" />}
+      <span className="collection-index">0{index + 1}</span><div className="collection-overlay" /><div className="collection-copy"><small>{item.subtitle}</small><h3>{item.title}</h3><b>Tanlash →</b></div>
+    </Link>)}
+  </div></section>;
+}
+
 export default async function HomePage() {
   const supabase = await createClient();
-  const [{ data: categories }, newArrivals, bestsellers, onSale] = await Promise.all([
+  const [{ data: categories }, newArrivals, bestsellers, onSale, footballIds, fitnessIds, cyclingIds, tennisIds] = await Promise.all([
     supabase.from("categories").select("id, name, slug").is("parent_id", null).eq("is_active", true).order("sort_order"),
     getNewArrivals(supabase), getBestsellers(supabase), getOnSale(supabase),
+    getCategoryIdsForSlug(supabase, "futbol"), getCategoryIdsForSlug(supabase, "fitnes-trenajyor"), getCategoryIdsForSlug(supabase, "velosport"), getCategoryIdsForSlug(supabase, "tennis"),
   ]);
+
+  const [football, fitness, cycling, tennis] = await Promise.all([
+    queryProducts(supabase, { categoryIds: footballIds, pageSize: 8 }),
+    queryProducts(supabase, { categoryIds: fitnessIds, pageSize: 8 }),
+    queryProducts(supabase, { categoryIds: cyclingIds, pageSize: 4 }),
+    queryProducts(supabase, { categoryIds: tennisIds, pageSize: 4 }),
+  ]);
+  const diverse = [football.items[0], fitness.items[0], cycling.items[0], tennis.items[0], football.items[1], fitness.items[1], cycling.items[1], tennis.items[1]].filter(Boolean) as ProductListItem[];
+  const collections: Collection[] = [
+    { title: "Futbol formasi va butsalar", subtitle: "MAYDONGA TAYYOR", href: "/catalog/futbol", image: football.items[0]?.image ?? null, tone: "collection-dark" },
+    { title: "Uy uchun fitness", subtitle: "KUCH VA NATIJA", href: "/catalog/fitnes-trenajyor", image: fitness.items[0]?.image ?? null, tone: "collection-lime" },
+    { title: "Velosiped va samokat", subtitle: "HARAKAT ERKINLIGI", href: "/catalog/velosport", image: cycling.items[0]?.image ?? null, tone: "collection-blue" },
+    { title: "Tennis va raketkalar", subtitle: "ANIQLIK VA TEZLIK", href: "/catalog/tennis", image: tennis.items[0]?.image ?? null, tone: "collection-sand" },
+  ];
 
   return (
     <>
@@ -78,11 +105,14 @@ export default async function HomePage() {
         </section>
       )}
 
-      <ProductRow eyebrow="HOZIRGINA QO‘SHILDI" title="Yangi kelganlar" products={newArrivals} />
+      <CollectionGrid collections={collections} />
+      <ProductRow eyebrow="FLEXSPORT TANLOVI" title="Hozir trendda" products={diverse.length ? diverse : newArrivals} />
       <section className="campaign">
         <div><span>FLEXSPORT CLUB</span><h2>Harakatni<br />bugun boshlang.</h2><p>Sport — bu xarid emas, bu o‘zingizga kiritilgan sarmoya.</p><Link href="/search">Katalogga o‘tish <Arrow /></Link></div>
         <div className="campaign-word" aria-hidden="true">MOVE</div>
       </section>
+      <ProductRow eyebrow="FUTBOL UCHUN HAMMASI" title="Maydonga tayyor" products={football.items.slice(0, 8)} href="/catalog/futbol" />
+      <ProductRow eyebrow="KUCHLI BO‘LING" title="Fitness va trenajyorlar" products={fitness.items.slice(0, 8)} href="/catalog/fitnes-trenajyor" />
       <ProductRow eyebrow="MIJOZLAR TANLOVI" title="Ko‘p sotilganlar" products={bestsellers} />
       <ProductRow eyebrow="FOYDALI NARXLAR" title="Chegirmadagi mahsulotlar" products={onSale} />
     </>
