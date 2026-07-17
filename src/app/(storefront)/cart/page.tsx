@@ -27,7 +27,8 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-6xl px-4 py-16 text-center">
+      <div className="cart-empty">
+        <div className="empty-icon">▱</div>
         <h1 className="text-2xl font-bold">Savat</h1>
         <p className="mt-4 text-black/50">Savatingiz bo&apos;sh.</p>
         <Link
@@ -41,13 +42,13 @@ export default function CartPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="mb-6 text-2xl font-bold">Savat</h1>
+    <div className="cart-page">
+      <div className="catalog-title"><span>XARIDINGIZ</span><h1>Savat</h1><p>Mahsulotlarni tekshiring va buyurtmani yakunlang</p></div>
       <div className="flex flex-col gap-4">
         {items.map((item) => (
           <div
             key={item.variantId}
-            className="flex items-center gap-4 rounded border border-black/10 p-3"
+            className="cart-item"
           >
             <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded bg-black/5">
               {item.image && (
@@ -76,7 +77,8 @@ export default function CartPage() {
               onChange={(e) =>
                 updateCartQty(item.variantId, Number(e.target.value))
               }
-              className="w-16 rounded border border-black/20 px-2 py-1 text-sm"
+              aria-label="Miqdor"
+              className="cart-qty"
             />
             <button
               onClick={() => removeFromCart(item.variantId)}
@@ -88,7 +90,7 @@ export default function CartPage() {
         ))}
       </div>
 
-      <div className="mt-8 flex items-center justify-between border-t border-black/10 pt-6">
+      <div className="cart-total-bar">
         <span className="text-lg font-bold">
           Jami: {formatPrice(getCartTotal(items))}
         </span>

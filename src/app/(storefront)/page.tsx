@@ -1,27 +1,49 @@
+import Image from "next/image";
 import Link from "next/link";
+import { ArrowRight, Barbell, BoxingGlove, CheckCircle, ClockCounterClockwise, Heart, PersonSimpleRun, ShieldCheck, ShoppingCartSimple, SoccerBall, Truck } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
-import { getBestsellers, getNewArrivals, getOnSale } from "@/lib/catalog/highlights";
+import { getBestsellers, getNewArrivals } from "@/lib/catalog/highlights";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import type { ProductListItem } from "@/lib/catalog/query";
+import { getCategoryIdsForSlug, queryProducts } from "@/lib/catalog/query";
 
 export const revalidate = 3600;
 
-const categoryIcons = ["⚽", "🏀", "🏋️", "🏃", "🎾", "🏊", "⛺", "🚲", "👕", "🎒"];
+const quickSports = [
+  { label: "Futbol", href: "/catalog/futbol", Icon: SoccerBall },
+  { label: "Fitness", href: "/catalog/fitnes-trenajyor", Icon: Barbell },
+  { label: "Yugurish", href: "/search?q=yugurish", Icon: PersonSimpleRun },
+  { label: "Boks", href: "/search?q=boks", Icon: BoxingGlove },
+];
 
-function Arrow() {
-  return <span aria-hidden="true">↗</span>;
+const showcaseProducts = [
+  { name: "FS Phantom Pro FG", type: "Professional futbol butsasi", price: "1 199 000 UZS", image: "/fs-boots.webp", href: "/search?q=butsa", badge: "Bestseller" },
+  { name: "FS Undeniable 60L", type: "Sport sumkasi va ryukzak", price: "699 000 UZS", image: "/fs-bag.webp", href: "/search?q=sumka", badge: "Yangi" },
+  { name: "FS Pro Compression", type: "Erkaklar uchun termo kiyim", price: "479 000 UZS", image: "/fs-compression.webp", href: "/search?q=kiyim", badge: "Yangi" },
+  { name: "FS Elite Match Ball", type: "Professional futbol to‘pi", price: "389 000 UZS", image: "/fs-football.webp", href: "/search?q=to‘p", badge: "Top" },
+];
+
+function ShowcaseCard({ product, priority = false }: { product: (typeof showcaseProducts)[number]; priority?: boolean }) {
+  return <article className="showcase-card">
+    <Link href={product.href} className="showcase-image">
+      <Image src={product.image} alt={product.name} fill sizes="(max-width:700px) 50vw, 25vw" priority={priority} />
+      <span className="showcase-badge">{product.badge}</span>
+      <span className="showcase-heart"><Heart /></span>
+    </Link>
+    <div className="showcase-info"><small>{product.type}</small><Link href={product.href}>{product.name}</Link><div><strong>{product.price}</strong><Link href={product.href} aria-label={`${product.name}ni ko‘rish`}><ShoppingCartSimple weight="bold" /></Link></div></div>
+  </article>;
 }
 
-function ProductRow({ title, eyebrow, products, href = "/search" }: { title: string; eyebrow: string; products: ProductListItem[]; href?: string }) {
-  if (products.length === 0) return null;
+function ProductRow({ title, products, href = "/search" }: { title: string; products: ProductListItem[]; href?: string }) {
+  if (!products.length) return null;
   return (
-    <section className="store-section">
-      <div className="section-heading">
-        <div><p>{eyebrow}</p><h2>{title}</h2></div>
-        <Link href={href}>Barchasini ko‘rish <Arrow /></Link>
+    <section className="premium-section">
+      <div className="premium-heading">
+        <h2>{title}</h2>
+        <Link href={href}>Barchasini ko‘rish <ArrowRight weight="bold" /></Link>
       </div>
-      <div className="product-grid">
-        {products.map((product, index) => <ProductCard key={product.id} product={product} priority={index < 4} />)}
+      <div className="premium-products">
+        {products.slice(0, 8).map((product, index) => <ProductCard key={product.id} product={product} priority={index < 2} />)}
       </div>
     </section>
   );
@@ -29,62 +51,66 @@ function ProductRow({ title, eyebrow, products, href = "/search" }: { title: str
 
 export default async function HomePage() {
   const supabase = await createClient();
-  const [{ data: categories }, newArrivals, bestsellers, onSale] = await Promise.all([
-    supabase.from("categories").select("id, name, slug").is("parent_id", null).eq("is_active", true).order("sort_order"),
-    getNewArrivals(supabase), getBestsellers(supabase), getOnSale(supabase),
+  const [newArrivals, bestsellers, footballIds, fitnessIds] = await Promise.all([
+    getNewArrivals(supabase),
+    getBestsellers(supabase),
+    getCategoryIdsForSlug(supabase, "futbol"),
+    getCategoryIdsForSlug(supabase, "fitnes-trenajyor"),
   ]);
+  const [football, fitness] = await Promise.all([
+    queryProducts(supabase, { categoryIds: footballIds, pageSize: 8 }),
+    queryProducts(supabase, { categoryIds: fitnessIds, pageSize: 8 }),
+  ]);
+  const mixed = [football.items[0], fitness.items[0], football.items[1], fitness.items[1], ...newArrivals]
+    .filter((item): item is ProductListItem => Boolean(item) && !item.slug.includes("medal"));
+  const popular = bestsellers.filter((item) => !item.slug.includes("medal"));
 
   return (
-    <>
-      <section className="hero">
-        <div className="hero-glow" />
-        <div className="hero-inner">
-          <div className="hero-copy">
-            <span className="hero-kicker"><i /> SPORT. HARAKAT. NATIJA.</span>
-            <h1>O‘zingizning<br /><em>eng kuchli</em><br />versiyangiz.</h1>
-            <p>Professional sport inventarlari, kiyimlar va aksessuarlar. O‘zbekiston bo‘ylab tez yetkazib beramiz.</p>
-            <div className="hero-actions">
-              <Link href="/search" className="primary-cta">Mahsulotlarni ko‘rish <Arrow /></Link>
-              <Link href="#categories" className="secondary-cta">Kategoriyalar ↓</Link>
-            </div>
-          </div>
-          <div className="hero-art" aria-hidden="true">
-            <div className="hero-number">01</div>
-            <div className="orbit orbit-one" /><div className="orbit orbit-two" />
-            <div className="sport-mark">F<span>S</span></div>
-            <div className="hero-caption"><b>10+</b><span>sport yo‘nalishi</span></div>
-          </div>
+    <div className="premium-home">
+      <section className="premium-hero">
+        <Image src="/flexsport-hero-athletes.webp" alt="FlexSport sportchilari" fill priority sizes="100vw" className="premium-hero-image" />
+        <div className="premium-hero-shade" />
+        <div className="premium-hero-copy">
+          <p>Cheksiz kuch.</p>
+          <h1>Sening<br />o‘yining.</h1>
+          <span>Chegaralarni yeng.<br />O‘z maqsadingga erish.</span>
+          <Link href="/search">Yangiliklarni ko‘rish <ArrowRight weight="bold" /></Link>
         </div>
       </section>
 
-      <section className="benefits" aria-label="Afzalliklar">
-        <div><b>✓</b><span><strong>Sifat kafolati</strong><small>Sinovdan o‘tgan mahsulotlar</small></span></div>
-        <div><b>↗</b><span><strong>Tez yetkazib berish</strong><small>Toshkent bo‘ylab 1 kunda</small></span></div>
-        <div><b>↺</b><span><strong>Oson qaytarish</strong><small>14 kun ichida almashtirish</small></span></div>
-        <div><b>◎</b><span><strong>Yordam kerakmi?</strong><small>Mutaxassis maslahati</small></span></div>
+      <section className="premium-trust" aria-label="Do‘kon afzalliklari">
+        <div><Truck /><span><strong>Tez yetkazib berish</strong><small>1–3 kun ichida</small></span></div>
+        <div><ShieldCheck /><span><strong>100% original</strong><small>Kafolatlangan sifat</small></span></div>
+        <div><ClockCounterClockwise /><span><strong>14 kun ichida</strong><small>Oson qaytarish</small></span></div>
       </section>
 
-      {categories && categories.length > 0 && (
-        <section className="store-section categories" id="categories">
-          <div className="section-heading"><div><p>YO‘NALISHINGIZNI TANLANG</p><h2>Sport kategoriyalari</h2></div></div>
-          <div className="category-grid">
-            {categories.map((category, index) => (
-              <Link key={category.id} href={`/catalog/${category.slug}`}>
-                <span className="category-icon">{categoryIcons[index % categoryIcons.length]}</span>
-                <strong>{category.name}</strong><small>Mahsulotlarni ko‘rish</small><i>→</i>
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
+      <nav className="sport-pills" aria-label="Sport turlari">
+        {quickSports.map(({ label, href, Icon }, index) => (
+          <Link href={href} key={label} className={index === 0 ? "active" : ""}><Icon weight="regular" /><span>{label}</span></Link>
+        ))}
+      </nav>
 
-      <ProductRow eyebrow="HOZIRGINA QO‘SHILDI" title="Yangi kelganlar" products={newArrivals} />
-      <section className="campaign">
-        <div><span>FLEXSPORT CLUB</span><h2>Harakatni<br />bugun boshlang.</h2><p>Sport — bu xarid emas, bu o‘zingizga kiritilgan sarmoya.</p><Link href="/search">Katalogga o‘tish <Arrow /></Link></div>
-        <div className="campaign-word" aria-hidden="true">MOVE</div>
+      <section className="premium-section">
+        <div className="premium-heading"><h2>Yangi mahsulotlar</h2><Link href="/search?q=kiyim">Barchasini ko‘rish <ArrowRight weight="bold" /></Link></div>
+        <Link href="/search?q=kiyim" className="featured-drop">
+          <Image src="/fs-compression.webp" alt="FS Pro Compression sport kiyimi" fill sizes="(max-width:700px) 100vw, 70vw" priority />
+          <div className="featured-copy"><small>Yangi</small><h3>FS Pro Compression</h3><p>Yengil. Nafas oladigan. Chegarasiz harakat.</p><strong>479 000 UZS</strong><span>Hozir sotib olish <ArrowRight weight="bold" /></span></div>
+        </Link>
       </section>
-      <ProductRow eyebrow="MIJOZLAR TANLOVI" title="Ko‘p sotilganlar" products={bestsellers} />
-      <ProductRow eyebrow="FOYDALI NARXLAR" title="Chegirmadagi mahsulotlar" products={onSale} />
-    </>
+
+      <section className="premium-section curated-showcase">
+        <div className="premium-heading"><h2>Eng ko‘p sotilgan</h2><Link href="/search">Barchasini ko‘rish <ArrowRight weight="bold" /></Link></div>
+        <div className="showcase-grid">{showcaseProducts.map((product, index) => <ShowcaseCard product={product} priority={index < 2} key={product.name} />)}</div>
+      </section>
+
+      <ProductRow title="Do‘kondagi mashhur mahsulotlar" products={popular.length ? popular : mixed} />
+      <section className="premium-manifesto">
+        <div><CheckCircle weight="fill" /><span>FlexSport tanlovi</span></div>
+        <h2>Sportni boshlash uchun<br /><em>ertani kutmang.</em></h2>
+        <Link href="/search">Katalogni ochish <ArrowRight weight="bold" /></Link>
+      </section>
+      <ProductRow title="Futbol uchun" products={football.items.filter((item) => !item.slug.includes("medal"))} href="/catalog/futbol" />
+      <ProductRow title="Fitness uchun" products={fitness.items.filter((item) => !item.slug.includes("medal"))} href="/catalog/fitnes-trenajyor" />
+    </div>
   );
 }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Heart, House, List, MagnifyingGlass, ShoppingBag, SquaresFour, User } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/actions/auth";
 import { CartBadge } from "@/components/storefront/CartBadge";
@@ -8,29 +9,37 @@ export default async function StorefrontLayout({ children }: { children: React.R
   const { data: { user } } = await supabase.auth.getUser();
   return (
     <>
-      <div className="announcement">BEPUL YETKAZIB BERISH — 500 000 SO‘MDAN YUQORI BUYURTMALAR UCHUN <span>•</span> 100% ORIGINAL MAHSULOTLAR</div>
-      <header className="site-header">
-        <div className="header-inner">
-          <Link href="/" className="brand" aria-label="FlexSport bosh sahifa">FLEX<span>SPORT</span><i>.</i></Link>
-          <nav className="main-nav" aria-label="Asosiy navigatsiya">
-            <Link href="/">Bosh sahifa</Link><Link href="/search">Katalog</Link><Link href="/#categories">Kategoriyalar</Link><Link href="/about">Biz haqimizda</Link>
-          </nav>
-          <div className="header-actions">
-            <Link href="/search" aria-label="Qidiruv" className="icon-link">⌕</Link>
-            {user ? <><Link href="/account">Kabinet</Link><form action={logout}><button type="submit">Chiqish</button></form></> : <Link href="/login">Kirish</Link>}
+      <header className="premium-header">
+        <div className="premium-header-row">
+          <Link href="/search" className="menu-trigger" aria-label="Katalogni ochish"><List weight="bold" /></Link>
+          <Link href="/" className="premium-brand" aria-label="FlexSport bosh sahifa">FLE<span>X</span>SPORT</Link>
+          <div className="premium-header-actions">
+            <Link href="/account/wishlist" aria-label="Sevimlilar"><Heart /></Link>
             <CartBadge />
           </div>
         </div>
+        <form action="/search" className="header-search">
+          <MagnifyingGlass aria-hidden="true" />
+          <input name="q" placeholder="Qidirish" aria-label="Mahsulot qidirish" />
+        </form>
+        <nav className="desktop-premium-nav" aria-label="Asosiy navigatsiya">
+          <Link href="/search">Katalog</Link><Link href="/catalog/futbol">Futbol</Link><Link href="/catalog/fitnes-trenajyor">Fitness</Link><Link href="/about">Biz haqimizda</Link>
+          {user ? <form action={logout}><button type="submit">Chiqish</button></form> : <Link href="/login">Kirish</Link>}
+        </nav>
       </header>
-      <main className="flex-1">{children}</main>
-      <footer className="site-footer">
-        <div className="footer-grid">
-          <div><Link href="/" className="brand">FLEX<span>SPORT</span><i>.</i></Link><p>Sport va faol hayot uchun kerak bo‘lgan barcha mahsulotlar — bitta ishonchli manzilda.</p></div>
-          <div><h3>Do‘kon</h3><Link href="/search">Katalog</Link><Link href="/#categories">Kategoriyalar</Link><Link href="/cart">Savat</Link></div>
-          <div><h3>Yordam</h3><Link href="/delivery-terms">Yetkazib berish</Link><Link href="/return-policy">Qaytarish siyosati</Link><Link href="/contact">Aloqa</Link></div>
-          <div><h3>Yangiliklardan xabardor bo‘ling</h3><p>Yangi mahsulotlar va maxsus takliflar.</p><Link className="footer-cta" href="/register">Club’ga qo‘shilish →</Link></div>
-        </div>
-        <div className="footer-bottom"><span>© {new Date().getFullYear()} Flexsport.uz</span><span>Toshkent, O‘zbekiston</span></div>
+      <main>{children}</main>
+      <nav className="premium-mobile-dock" aria-label="Mobil navigatsiya">
+        <Link href="/"><House weight="bold" /><small>Bosh sahifa</small></Link>
+        <Link href="/search"><SquaresFour /><small>Katalog</small></Link>
+        <Link href="/account/wishlist"><Heart /><small>Sevimlilar</small></Link>
+        <Link href="/account"><User /><small>Profil</small></Link>
+        <Link href="/cart"><ShoppingBag /><small>Savat</small></Link>
+      </nav>
+      <footer className="premium-footer">
+        <Link href="/" className="premium-brand">FLE<span>X</span>SPORT</Link>
+        <p>Sport va faol hayot uchun premium onlayn do‘kon.</p>
+        <div><Link href="/delivery-terms">Yetkazib berish</Link><Link href="/return-policy">Qaytarish</Link><Link href="/contact">Aloqa</Link></div>
+        <small>© {new Date().getFullYear()} FlexSport Uzbekistan</small>
       </footer>
     </>
   );
