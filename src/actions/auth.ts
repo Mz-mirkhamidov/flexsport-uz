@@ -21,12 +21,17 @@ export async function login(
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
   if (error) {
     return { error: "Email yoki parol noto'g'ri" };
   }
 
-  redirect("/");
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .single();
+  redirect(profile?.role === "admin" ? "/admin" : "/");
 }
 
 export async function register(

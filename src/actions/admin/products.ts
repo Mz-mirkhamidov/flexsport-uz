@@ -42,6 +42,12 @@ function parseTags(raw?: string) {
     .filter(Boolean);
 }
 
+function productTags(formData: FormData, raw?: string) {
+  const tags = parseTags(raw).filter((tag) => tag !== "premium-curated");
+  if (formData.get("isPremium") === "on") tags.push("premium-curated");
+  return tags;
+}
+
 export async function createProduct(
   _prevState: ProductActionState,
   formData: FormData,
@@ -81,7 +87,7 @@ export async function createProduct(
       brand_id: brandId,
       base_price: parsed.data.basePrice,
       discount_pct: parsed.data.discountPct ?? null,
-      tags: parseTags(parsed.data.tags),
+      tags: productTags(formData, parsed.data.tags),
       low_stock_threshold: parsed.data.lowStockThreshold,
       is_active: parsed.data.isActive,
     })
@@ -135,7 +141,7 @@ export async function updateProduct(
       brand_id: brandId,
       base_price: parsed.data.basePrice,
       discount_pct: parsed.data.discountPct ?? null,
-      tags: parseTags(parsed.data.tags),
+      tags: productTags(formData, parsed.data.tags),
       low_stock_threshold: parsed.data.lowStockThreshold,
       is_active: parsed.data.isActive,
     })

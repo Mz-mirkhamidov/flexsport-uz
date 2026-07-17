@@ -1,4 +1,5 @@
 import type { CatalogFilterOptions } from "@/lib/catalog/query";
+import { FunnelSimple } from "@phosphor-icons/react/dist/ssr";
 
 type Props = {
   basePath: string;
@@ -17,7 +18,7 @@ type Props = {
 export function CatalogFilters({ basePath, options, selected }: Props) {
   return (
     <details className="catalog-filter-shell">
-      <summary><span>☷ Filtr va saralash</span><small>Natijani aniqlashtirish</small></summary>
+      <summary><span><FunnelSimple weight="bold" /> Filtr va saralash</span><small>Natijani aniqlashtirish</small></summary>
     <form method="get" action={basePath} className="catalog-filter-form">
       <div className="flex flex-col gap-2">
         <span className="font-semibold">Narx oralig&apos;i</span>

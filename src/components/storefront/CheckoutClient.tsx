@@ -25,7 +25,8 @@ export function CheckoutClient({ addresses }: { addresses: AddressWithZone[] }) 
   const router = useRouter();
 
   useEffect(() => {
-    setItems(getCart());
+    const frame = window.requestAnimationFrame(() => setItems(getCart()));
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId);
@@ -83,14 +84,14 @@ export function CheckoutClient({ addresses }: { addresses: AddressWithZone[] }) 
   }
 
   return (
-    <div className="grid grid-cols-1 gap-8 md:grid-cols-[1fr_360px]">
+    <div className="checkout-layout">
       <div>
         <h2 className="mb-3 text-lg font-semibold">Manzil</h2>
         <div className="flex flex-col gap-2">
           {addresses.map((a) => (
             <label
               key={a.id}
-              className={`flex cursor-pointer flex-col gap-1 rounded border p-3 text-sm ${
+              className={`checkout-address ${
                 selectedAddressId === a.id ? "border-[#8DC63F] bg-[#8DC63F]/5" : "border-black/10"
               }`}
             >
@@ -128,7 +129,7 @@ export function CheckoutClient({ addresses }: { addresses: AddressWithZone[] }) 
         </div>
       </div>
 
-      <div className="h-fit rounded border border-black/10 p-4">
+      <div className="checkout-summary">
         <div className="flex flex-col gap-2 text-sm">
           <div className="flex justify-between">
             <span>Mahsulotlar</span>

@@ -22,18 +22,18 @@ export default async function AdminLayout({
     : { data: null };
 
   return (
-    <div className="flex min-h-full bg-gray-50">
-      <aside className="flex w-64 shrink-0 flex-col bg-gray-950">
+    <div className="flex min-h-full flex-col bg-gray-50 md:flex-row">
+      <aside className="flex w-full shrink-0 flex-col bg-gray-950 md:min-h-screen md:w-64">
         <div className="px-5 py-6">
           <Link href="/admin" className="text-lg font-bold text-white">
             FLEX<span className="text-[#8DC63F]">SPORT</span>
           </Link>
           <p className="mt-0.5 text-xs text-gray-500">Admin panel</p>
         </div>
-        <div className="flex-1 overflow-y-auto pb-4">
+        <div className="flex-1 overflow-x-auto pb-3 md:overflow-y-auto md:pb-4">
           <AdminSidebarNav />
         </div>
-        <div className="border-t border-white/10 px-3 py-4">
+        <div className="hidden border-t border-white/10 px-3 py-4 md:block">
           <div className="flex items-center gap-3 rounded-lg px-3 py-2">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#8DC63F]/20 text-sm font-semibold text-[#8DC63F]">
               {(profile?.full_name ?? profile?.email ?? "A").charAt(0).toUpperCase()}
@@ -65,7 +65,7 @@ export default async function AdminLayout({
           </div>
         </div>
       </aside>
-      <main className="flex-1 overflow-x-hidden p-8">{children}</main>
+      <main className="flex-1 overflow-x-hidden p-4 md:p-8">{children}</main>
     </div>
   );
 }
