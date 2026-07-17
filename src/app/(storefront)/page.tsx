@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Barbell, BoxingGlove, CheckCircle, ClockCounterClockwise, PersonSimpleRun, ShieldCheck, SoccerBall, Truck } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, Barbell, BoxingGlove, CheckCircle, ClockCounterClockwise, Heart, PersonSimpleRun, ShieldCheck, ShoppingCartSimple, SoccerBall, Truck } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/server";
 import { getBestsellers, getNewArrivals } from "@/lib/catalog/highlights";
 import { ProductCard } from "@/components/storefront/ProductCard";
@@ -15,6 +15,24 @@ const quickSports = [
   { label: "Yugurish", href: "/search?q=yugurish", Icon: PersonSimpleRun },
   { label: "Boks", href: "/search?q=boks", Icon: BoxingGlove },
 ];
+
+const showcaseProducts = [
+  { name: "FS Phantom Pro FG", type: "Professional futbol butsasi", price: "1 199 000 UZS", image: "/fs-boots.webp", href: "/search?q=butsa", badge: "Bestseller" },
+  { name: "FS Undeniable 60L", type: "Sport sumkasi va ryukzak", price: "699 000 UZS", image: "/fs-bag.webp", href: "/search?q=sumka", badge: "Yangi" },
+  { name: "FS Pro Compression", type: "Erkaklar uchun termo kiyim", price: "479 000 UZS", image: "/fs-compression.webp", href: "/search?q=kiyim", badge: "Yangi" },
+  { name: "FS Elite Match Ball", type: "Professional futbol to‘pi", price: "389 000 UZS", image: "/fs-football.webp", href: "/search?q=to‘p", badge: "Top" },
+];
+
+function ShowcaseCard({ product, priority = false }: { product: (typeof showcaseProducts)[number]; priority?: boolean }) {
+  return <article className="showcase-card">
+    <Link href={product.href} className="showcase-image">
+      <Image src={product.image} alt={product.name} fill sizes="(max-width:700px) 50vw, 25vw" priority={priority} />
+      <span className="showcase-badge">{product.badge}</span>
+      <span className="showcase-heart"><Heart /></span>
+    </Link>
+    <div className="showcase-info"><small>{product.type}</small><Link href={product.href}>{product.name}</Link><div><strong>{product.price}</strong><Link href={product.href} aria-label={`${product.name}ni ko‘rish`}><ShoppingCartSimple weight="bold" /></Link></div></div>
+  </article>;
+}
 
 function ProductRow({ title, products, href = "/search" }: { title: string; products: ProductListItem[]; href?: string }) {
   if (!products.length) return null;
@@ -45,7 +63,6 @@ export default async function HomePage() {
   ]);
   const mixed = [football.items[0], fitness.items[0], football.items[1], fitness.items[1], ...newArrivals]
     .filter((item): item is ProductListItem => Boolean(item) && !item.slug.includes("medal"));
-  const featured = mixed[0];
   const popular = bestsellers.filter((item) => !item.slug.includes("medal"));
 
   return (
@@ -73,17 +90,20 @@ export default async function HomePage() {
         ))}
       </nav>
 
-      {featured && (
-        <section className="premium-section">
-          <div className="premium-heading"><h2>Yangi mahsulotlar</h2><Link href="/search">Barchasini ko‘rish <ArrowRight weight="bold" /></Link></div>
-          <Link href={`/product/${featured.slug}`} className="featured-drop">
-            <div className="featured-copy"><small>Yangi</small><h3>{featured.name}</h3><p>Yengil. Mustahkam. Chegarasiz harakat.</p><strong>{new Intl.NumberFormat("uz-UZ").format(featured.price)} UZS</strong><span>Hozir sotib olish <ArrowRight weight="bold" /></span></div>
-            {featured.image ? <Image src={featured.image} alt={featured.name} fill sizes="(max-width:600px) 100vw, 50vw" /> : <div className="feature-fallback">FS</div>}
-          </Link>
-        </section>
-      )}
+      <section className="premium-section">
+        <div className="premium-heading"><h2>Yangi mahsulotlar</h2><Link href="/search?q=kiyim">Barchasini ko‘rish <ArrowRight weight="bold" /></Link></div>
+        <Link href="/search?q=kiyim" className="featured-drop">
+          <Image src="/fs-compression.webp" alt="FS Pro Compression sport kiyimi" fill sizes="(max-width:700px) 100vw, 70vw" priority />
+          <div className="featured-copy"><small>Yangi</small><h3>FS Pro Compression</h3><p>Yengil. Nafas oladigan. Chegarasiz harakat.</p><strong>479 000 UZS</strong><span>Hozir sotib olish <ArrowRight weight="bold" /></span></div>
+        </Link>
+      </section>
 
-      <ProductRow title="Eng ko‘p sotilgan" products={popular.length ? popular : mixed} />
+      <section className="premium-section curated-showcase">
+        <div className="premium-heading"><h2>Eng ko‘p sotilgan</h2><Link href="/search">Barchasini ko‘rish <ArrowRight weight="bold" /></Link></div>
+        <div className="showcase-grid">{showcaseProducts.map((product, index) => <ShowcaseCard product={product} priority={index < 2} key={product.name} />)}</div>
+      </section>
+
+      <ProductRow title="Do‘kondagi mashhur mahsulotlar" products={popular.length ? popular : mixed} />
       <section className="premium-manifesto">
         <div><CheckCircle weight="fill" /><span>FlexSport tanlovi</span></div>
         <h2>Sportni boshlash uchun<br /><em>ertani kutmang.</em></h2>
