@@ -1,16 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Barbell, BoxingGlove, CheckCircle, ClockCounterClockwise, Heart, PersonSimpleRun, ShieldCheck, ShoppingCartSimple, SoccerBall, Truck } from "@phosphor-icons/react/dist/ssr";
-import { createClient } from "@/lib/supabase/server";
-import { ProductCard } from "@/components/storefront/ProductCard";
-import type { ProductListItem } from "@/lib/catalog/query";
-import { getCategoryIdsForSlug, queryProducts } from "@/lib/catalog/query";
+import { ArrowRight, Barbell, BoxingGlove, ClockCounterClockwise, Heart, PersonSimpleRun, ShieldCheck, ShoppingCartSimple, SoccerBall, Truck } from "@phosphor-icons/react/dist/ssr";
+import { CuratedProductCard } from "@/components/storefront/CuratedProductCard";
+import { curatedProducts } from "@/lib/catalog/curated-products";
 
 export const revalidate = 3600;
 
 const quickSports = [
-  { label: "Futbol", href: "/catalog/futbol", Icon: SoccerBall },
-  { label: "Fitness", href: "/catalog/fitnes-trenajyor", Icon: Barbell },
+  { label: "Futbol", href: "/search?category=butsa", Icon: SoccerBall },
+  { label: "Fitness", href: "/search?category=fitness", Icon: Barbell },
   { label: "Yugurish", href: "/search?q=yugurish", Icon: PersonSimpleRun },
   { label: "Boks", href: "/search?q=boks", Icon: BoxingGlove },
 ];
@@ -33,8 +31,7 @@ function ShowcaseCard({ product, priority = false }: { product: (typeof showcase
   </article>;
 }
 
-function ProductRow({ title, products, href = "/search" }: { title: string; products: ProductListItem[]; href?: string }) {
-  if (!products.length) return null;
+function ProductRow({ title, products, href = "/search" }: { title: string; products: typeof curatedProducts; href?: string }) {
   return (
     <section className="premium-section">
       <div className="premium-heading">
@@ -42,22 +39,13 @@ function ProductRow({ title, products, href = "/search" }: { title: string; prod
         <Link href={href}>Barchasini ko‘rish <ArrowRight weight="bold" /></Link>
       </div>
       <div className="premium-products">
-        {products.slice(0, 4).map((product, index) => <ProductCard key={product.id} product={product} priority={index < 2} />)}
+        {products.slice(0, 4).map((product, index) => <CuratedProductCard key={product.slug} product={product} priority={index < 2} />)}
       </div>
     </section>
   );
 }
 
-export default async function HomePage() {
-  const supabase = await createClient();
-  const [footballIds, fitnessIds] = await Promise.all([
-    getCategoryIdsForSlug(supabase, "futbol"),
-    getCategoryIdsForSlug(supabase, "fitnes-trenajyor"),
-  ]);
-  const [football, fitness] = await Promise.all([
-    queryProducts(supabase, { categoryIds: footballIds, pageSize: 8 }),
-    queryProducts(supabase, { categoryIds: fitnessIds, pageSize: 8 }),
-  ]);
+export default function HomePage() {
   return (
     <div className="premium-home">
       <section className="premium-hero">
@@ -96,13 +84,16 @@ export default async function HomePage() {
         <div className="showcase-grid">{showcaseProducts.map((product, index) => <ShowcaseCard product={product} priority={index < 2} key={product.name} />)}</div>
       </section>
 
-      <section className="premium-manifesto">
-        <div><CheckCircle weight="fill" /><span>FlexSport tanlovi</span></div>
-        <h2>Sportni boshlash uchun<br /><em>ertani kutmang.</em></h2>
-        <Link href="/search">Katalogni ochish <ArrowRight weight="bold" /></Link>
+      <section className="sport-finder">
+        <div className="sport-finder-copy"><span>SPORT FINDER / 01</span><h2>Maqsadingizni<br/><em>tanlang.</em></h2><p>Sizga mos kolleksiyani bir bosishda toping.</p></div>
+        <div className="sport-finder-links">
+          <Link href="/search?category=butsa"><small>01 / MAYDON</small><strong>Tezlik va nazorat</strong><ArrowRight/></Link>
+          <Link href="/search?category=fitness"><small>02 / KUCH</small><strong>Fitness va trening</strong><ArrowRight/></Link>
+          <Link href="/search?category=sumka"><small>03 / HARAKAT</small><strong>Kiyim va sumkalar</strong><ArrowRight/></Link>
+        </div>
       </section>
-      <ProductRow title="Futbol uchun" products={football.items.filter((item) => !item.slug.includes("medal"))} href="/catalog/futbol" />
-      <ProductRow title="Fitness uchun" products={fitness.items.filter((item) => !item.slug.includes("medal"))} href="/catalog/fitnes-trenajyor" />
+      <ProductRow title="Futbol uchun" products={curatedProducts.filter((item) => ["butsa","forma","top","anjom"].includes(item.category))} href="/search?category=butsa" />
+      <ProductRow title="Fitness va harakat" products={curatedProducts.filter((item) => ["fitness","sumka"].includes(item.category))} href="/search?category=fitness" />
     </div>
   );
 }

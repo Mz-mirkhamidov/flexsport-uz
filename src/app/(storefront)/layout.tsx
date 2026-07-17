@@ -23,7 +23,7 @@ export default async function StorefrontLayout({ children }: { children: React.R
           <input name="q" placeholder="Qidirish" aria-label="Mahsulot qidirish" />
         </form>
         <nav className="desktop-premium-nav" aria-label="Asosiy navigatsiya">
-          <Link href="/search">Katalog</Link><Link href="/catalog/futbol">Futbol</Link><Link href="/catalog/fitnes-trenajyor">Fitness</Link><Link href="/about">Biz haqimizda</Link>
+          <Link href="/search">Katalog</Link><Link href="/search?category=butsa">Futbol</Link><Link href="/search?category=fitness">Fitness</Link><Link href="/about">Biz haqimizda</Link>
           {user ? <form action={logout}><button type="submit">Chiqish</button></form> : <Link href="/login">Kirish</Link>}
         </nav>
       </header>
