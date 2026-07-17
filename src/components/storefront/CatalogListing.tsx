@@ -97,16 +97,16 @@ export async function CatalogListing({
     : `/catalog/${categorySlug}`;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="text-2xl font-bold">{activeCategory.name}</h1>
+    <div className="catalog-page">
+      <div className="catalog-title"><span>FLEXSPORT KATALOGI</span><h1>{activeCategory.name}</h1><p>Sizning natijangiz uchun tanlangan sport mahsulotlari</p></div>
 
       {subcategories && subcategories.length > 0 && (
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="subcategory-scroll">
           {subcategories.map((s) => (
             <Link
               key={s.id}
               href={`/catalog/${categorySlug}/${s.slug}`}
-              className="rounded-full border border-black/10 px-3 py-1 text-sm hover:border-[#8DC63F] hover:text-[#8DC63F]"
+              className="subcategory-chip"
             >
               {s.name}
             </Link>
@@ -114,7 +114,7 @@ export async function CatalogListing({
         </div>
       )}
 
-      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[240px_1fr]">
+      <div className="catalog-layout">
         <CatalogFilters
           basePath={basePath}
           options={filterOptions}
@@ -122,9 +122,9 @@ export async function CatalogListing({
         />
 
         <div>
-          <p className="mb-4 text-sm text-black/50">{total} ta mahsulot</p>
+          <div className="catalog-count"><b>{total}</b> ta mahsulot topildi</div>
           {items.length > 0 ? (
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div className="product-grid catalog-products">
               {items.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
