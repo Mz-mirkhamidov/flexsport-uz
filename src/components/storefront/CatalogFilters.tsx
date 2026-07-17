@@ -16,11 +16,9 @@ type Props = {
 
 export function CatalogFilters({ basePath, options, selected }: Props) {
   return (
-    <form
-      method="get"
-      action={basePath}
-      className="flex flex-col gap-6 rounded border border-black/10 p-4 text-sm"
-    >
+    <details className="catalog-filter-shell">
+      <summary><span>☷ Filtr va saralash</span><small>Natijani aniqlashtirish</small></summary>
+    <form method="get" action={basePath} className="catalog-filter-form">
       <div className="flex flex-col gap-2">
         <span className="font-semibold">Narx oralig&apos;i</span>
         <div className="flex items-center gap-2">
@@ -133,5 +131,6 @@ export function CatalogFilters({ basePath, options, selected }: Props) {
         Filtrlash
       </button>
     </form>
+    </details>
   );
 }

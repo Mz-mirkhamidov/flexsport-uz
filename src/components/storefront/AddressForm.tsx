@@ -8,7 +8,8 @@ export function AddressForm({ zones }: { zones: Tables<"delivery_zones">[] }) {
   const [state, formAction, pending] = useActionState(createAddress, null);
 
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded border border-black/10 p-4">
+    <form action={formAction} className="mobile-form-card">
+      <div className="form-intro"><span>1-QADAM</span><h2>Yetkazib berish manzili</h2><p>Buyurtmangizni qayerga olib borishimizni kiriting.</p></div>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium">Ism familiya</label>
@@ -16,7 +17,8 @@ export function AddressForm({ zones }: { zones: Tables<"delivery_zones">[] }) {
             name="fullName"
             type="text"
             required
-            className="rounded border border-black/20 px-3 py-2 text-sm outline-none focus:border-[#8DC63F]"
+            autoComplete="name"
+            className="mobile-input"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -26,7 +28,9 @@ export function AddressForm({ zones }: { zones: Tables<"delivery_zones">[] }) {
             type="tel"
             placeholder="+998 90 123 45 67"
             required
-            className="rounded border border-black/20 px-3 py-2 text-sm outline-none focus:border-[#8DC63F]"
+            inputMode="tel"
+            autoComplete="tel"
+            className="mobile-input"
           />
         </div>
       </div>
@@ -37,7 +41,8 @@ export function AddressForm({ zones }: { zones: Tables<"delivery_zones">[] }) {
             name="region"
             type="text"
             required
-            className="rounded border border-black/20 px-3 py-2 text-sm outline-none focus:border-[#8DC63F]"
+            autoComplete="address-level1"
+            className="mobile-input"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -46,7 +51,8 @@ export function AddressForm({ zones }: { zones: Tables<"delivery_zones">[] }) {
             name="city"
             type="text"
             required
-            className="rounded border border-black/20 px-3 py-2 text-sm outline-none focus:border-[#8DC63F]"
+            autoComplete="address-level2"
+            className="mobile-input"
           />
         </div>
       </div>
@@ -56,7 +62,8 @@ export function AddressForm({ zones }: { zones: Tables<"delivery_zones">[] }) {
           name="addressLine"
           type="text"
           required
-          className="rounded border border-black/20 px-3 py-2 text-sm outline-none focus:border-[#8DC63F]"
+          autoComplete="street-address"
+          className="mobile-input"
         />
       </div>
       <div className="flex flex-col gap-1">
@@ -64,7 +71,7 @@ export function AddressForm({ zones }: { zones: Tables<"delivery_zones">[] }) {
         <select
           name="deliveryZoneId"
           required
-          className="rounded border border-black/20 px-3 py-2 text-sm outline-none focus:border-[#8DC63F]"
+          className="mobile-input"
         >
           <option value="">Tanlang</option>
           {zones.map((z) => (
@@ -82,7 +89,7 @@ export function AddressForm({ zones }: { zones: Tables<"delivery_zones">[] }) {
       <button
         type="submit"
         disabled={pending}
-        className="self-start rounded bg-black px-4 py-2 text-sm font-medium text-white hover:bg-[#8DC63F] disabled:opacity-60"
+        className="form-primary-button"
       >
         {pending ? "Saqlanmoqda..." : "Manzil qo'shish"}
       </button>

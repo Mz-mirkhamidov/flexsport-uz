@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { ShoppingCart } from "@phosphor-icons/react";
 import { getCart, getCartCount, subscribeToCart } from "@/lib/cart/store";
 
 export function CartBadge() {
@@ -15,9 +16,10 @@ export function CartBadge() {
 
   return (
     <Link href="/cart" className="cart-link" aria-label={`Savat, ${count} ta mahsulot`}>
-      <span aria-hidden="true">□</span> Savat
+      <ShoppingCart aria-hidden="true" />
+      <span className="cart-label">Savat</span>
       {count > 0 && (
-        <span className="ml-1 rounded-full bg-[#8DC63F] px-1.5 py-0.5 text-xs font-bold text-black">
+        <span className="cart-count">
           {count}
         </span>
       )}

@@ -67,9 +67,9 @@ export function ProductDetail({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-10 md:grid-cols-2">
+    <div className="product-detail-grid">
       <div className="flex flex-col gap-3">
-        <div className="relative aspect-square overflow-hidden rounded bg-black/5">
+        <div className="product-gallery-main">
           {sortedImages[activeImage] ? (
             <Image
               src={sortedImages[activeImage].url}
@@ -102,10 +102,11 @@ export function ProductDetail({
         )}
       </div>
 
-      <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-bold">{product.name}</h1>
+      <div className="product-detail-copy">
+        <div className="product-detail-kicker">FLEXSPORT • ORIGINAL MAHSULOT</div>
+        <h1>{product.name}</h1>
 
-        <div className="flex items-center gap-3">
+        <div className="product-detail-price">
           <span className="text-2xl font-bold">{formatPrice(price)}</span>
           {originalPrice && (
             <>
@@ -120,7 +121,7 @@ export function ProductDetail({
         </div>
 
         {product.description && (
-          <p className="text-sm leading-relaxed text-black/70">
+          <p className="product-description">
             {product.description}
           </p>
         )}
@@ -160,19 +161,20 @@ export function ProductDetail({
           </div>
         )}
 
-        <div className="flex items-center gap-3">
+        <div className="product-buy-row">
           <input
             type="number"
             min={1}
             max={selectedVariant?.stock_qty ?? 1}
             value={qty}
             onChange={(e) => setQty(Math.max(1, Number(e.target.value)))}
-            className="w-20 rounded border border-black/20 px-3 py-2 text-sm"
+            aria-label="Mahsulot soni"
+            className="product-qty"
           />
           <button
             onClick={handleAddToCart}
             disabled={outOfStock}
-            className="flex-1 rounded bg-black px-6 py-3 text-sm font-medium text-white transition hover:bg-[#8DC63F] disabled:cursor-not-allowed disabled:opacity-40"
+            className="product-add-button"
           >
             {outOfStock
               ? "Tugagan"
@@ -188,6 +190,12 @@ export function ProductDetail({
           initialWishlisted={isWishlisted}
           isLoggedIn={isLoggedIn}
         />
+
+        <div className="product-trust">
+          <div><b>✓</b><span><strong>Sifat kafolati</strong><small>Tekshirilgan mahsulot</small></span></div>
+          <div><b>↗</b><span><strong>Tez yetkazish</strong><small>1–3 ish kuni</small></span></div>
+          <div><b>↺</b><span><strong>Oson qaytarish</strong><small>14 kun ichida</small></span></div>
+        </div>
 
         {product.tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
