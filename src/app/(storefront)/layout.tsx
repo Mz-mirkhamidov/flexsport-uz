@@ -3,88 +3,34 @@ import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/actions/auth";
 import { CartBadge } from "@/components/storefront/CartBadge";
 
-export default async function StorefrontLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function StorefrontLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const { data: { user } } = await supabase.auth.getUser();
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-black/10 bg-black text-white">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-          <Link href="/" className="text-xl font-bold tracking-tight">
-            FLEX<span className="text-[#8DC63F]">SPORT</span>
-          </Link>
-          <nav className="hidden gap-6 text-sm font-medium md:flex">
-            <Link href="/" className="hover:text-[#8DC63F]">
-              Bosh sahifa
-            </Link>
-            <Link href="/search" className="hover:text-[#8DC63F]">
-              Qidiruv
-            </Link>
+      <div className="announcement">BEPUL YETKAZIB BERISH — 500 000 SO‘MDAN YUQORI BUYURTMALAR UCHUN <span>•</span> 100% ORIGINAL MAHSULOTLAR</div>
+      <header className="site-header">
+        <div className="header-inner">
+          <Link href="/" className="brand" aria-label="FlexSport bosh sahifa">FLEX<span>SPORT</span><i>.</i></Link>
+          <nav className="main-nav" aria-label="Asosiy navigatsiya">
+            <Link href="/">Bosh sahifa</Link><Link href="/search">Katalog</Link><Link href="/#categories">Kategoriyalar</Link><Link href="/about">Biz haqimizda</Link>
           </nav>
-          <div className="flex items-center gap-4 text-sm font-medium">
-            <Link
-              href="/search"
-              aria-label="Qidiruv"
-              className="hover:text-[#8DC63F] md:hidden"
-            >
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <circle cx="11" cy="11" r="7" />
-                <path d="m21 21-4.35-4.35" />
-              </svg>
-            </Link>
-            {user ? (
-              <>
-                <Link href="/account" className="hover:text-[#8DC63F]">
-                  Kabinet
-                </Link>
-                <form action={logout}>
-                  <button type="submit" className="hover:text-[#8DC63F]">
-                    Chiqish
-                  </button>
-                </form>
-              </>
-            ) : (
-              <Link href="/login" className="hover:text-[#8DC63F]">
-                Kirish
-              </Link>
-            )}
+          <div className="header-actions">
+            <Link href="/search" aria-label="Qidiruv" className="icon-link">⌕</Link>
+            {user ? <><Link href="/account">Kabinet</Link><form action={logout}><button type="submit">Chiqish</button></form></> : <Link href="/login">Kirish</Link>}
             <CartBadge />
           </div>
         </div>
       </header>
       <main className="flex-1">{children}</main>
-      <footer className="border-t border-black/10 bg-black text-white/70">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 text-sm">
-          <nav className="flex flex-wrap gap-4">
-            <Link href="/about" className="hover:text-white">
-              Biz haqimizda
-            </Link>
-            <Link href="/delivery-terms" className="hover:text-white">
-              Yetkazib berish shartlari
-            </Link>
-            <Link href="/return-policy" className="hover:text-white">
-              Qaytarish siyosati
-            </Link>
-            <Link href="/contact" className="hover:text-white">
-              Aloqa
-            </Link>
-          </nav>
-          <p>&copy; {new Date().getFullYear()} Flexsport.uz — barcha huquqlar himoyalangan.</p>
+      <footer className="site-footer">
+        <div className="footer-grid">
+          <div><Link href="/" className="brand">FLEX<span>SPORT</span><i>.</i></Link><p>Sport va faol hayot uchun kerak bo‘lgan barcha mahsulotlar — bitta ishonchli manzilda.</p></div>
+          <div><h3>Do‘kon</h3><Link href="/search">Katalog</Link><Link href="/#categories">Kategoriyalar</Link><Link href="/cart">Savat</Link></div>
+          <div><h3>Yordam</h3><Link href="/delivery-terms">Yetkazib berish</Link><Link href="/return-policy">Qaytarish siyosati</Link><Link href="/contact">Aloqa</Link></div>
+          <div><h3>Yangiliklardan xabardor bo‘ling</h3><p>Yangi mahsulotlar va maxsus takliflar.</p><Link className="footer-cta" href="/register">Club’ga qo‘shilish →</Link></div>
         </div>
+        <div className="footer-bottom"><span>© {new Date().getFullYear()} Flexsport.uz</span><span>Toshkent, O‘zbekiston</span></div>
       </footer>
     </>
   );
