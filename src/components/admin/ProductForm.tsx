@@ -119,6 +119,15 @@ export function ProductForm({ categories, product }: Props) {
           />
           Faol (saytda ko&apos;rinadi)
         </label>
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+          <input
+            type="checkbox"
+            name="isPremium"
+            defaultChecked={product?.tags?.includes("premium-curated") ?? true}
+            className="h-4 w-4 rounded border-gray-300 text-[#8DC63F] focus:ring-[#8DC63F]"
+          />
+          Premium katalog va bosh sahifada ko&apos;rsatish
+        </label>
 
         {state?.error && <p className="text-sm text-red-600">{state.error}</p>}
 

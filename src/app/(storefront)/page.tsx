@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, Barbell, BoxingGlove, ClockCounterClockwise, Heart, PersonSimpleRun, ShieldCheck, ShoppingCartSimple, SoccerBall, Truck } from "@phosphor-icons/react/dist/ssr";
 import { CuratedProductCard } from "@/components/storefront/CuratedProductCard";
 import { curatedProducts } from "@/lib/catalog/curated-products";
+import { getCuratedProducts } from "@/lib/catalog/curated-query";
 
 export const revalidate = 3600;
 
@@ -45,7 +46,8 @@ function ProductRow({ title, products, href = "/search" }: { title: string; prod
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const liveProducts = await getCuratedProducts();
   return (
     <div className="premium-home">
       <section className="premium-hero">
@@ -92,8 +94,8 @@ export default function HomePage() {
           <Link href="/search?category=sumka"><small>03 / HARAKAT</small><strong>Kiyim va sumkalar</strong><ArrowRight/></Link>
         </div>
       </section>
-      <ProductRow title="Futbol uchun" products={curatedProducts.filter((item) => ["butsa","forma","top","anjom"].includes(item.category))} href="/search?category=butsa" />
-      <ProductRow title="Fitness va harakat" products={curatedProducts.filter((item) => ["fitness","sumka"].includes(item.category))} href="/search?category=fitness" />
+      <ProductRow title="Futbol uchun" products={liveProducts.filter((item) => ["butsa","forma","top","anjom"].includes(item.category))} href="/search?category=butsa" />
+      <ProductRow title="Fitness va harakat" products={liveProducts.filter((item) => ["fitness","sumka"].includes(item.category))} href="/search?category=fitness" />
     </div>
   );
 }

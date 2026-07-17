@@ -8,9 +8,10 @@ export default function RegisterPage() {
   const [state, formAction, pending] = useActionState(register, null);
 
   return (
-    <div className="mx-auto flex max-w-sm flex-col gap-6 px-4 py-16">
-      <h1 className="text-2xl font-bold">Ro&apos;yxatdan o&apos;tish</h1>
-      <form action={formAction} className="flex flex-col gap-4">
+    <div className="auth-shell">
+      <div className="auth-kicker">YANGI HISOB / 01</div>
+      <h1>Ro&apos;yxatdan o&apos;tish</h1><p className="auth-intro">Tezkor checkout va buyurtma holatini kuzatish uchun hisob yarating.</p>
+      <form action={formAction} className="auth-form">
         <div className="flex flex-col gap-1">
           <label htmlFor="fullName" className="text-sm font-medium">
             Ism familiya
@@ -20,7 +21,8 @@ export default function RegisterPage() {
             name="fullName"
             type="text"
             required
-            className="rounded border border-black/20 px-3 py-2 outline-none focus:border-[#8DC63F]"
+            className="auth-input"
+            placeholder="Ism va familiyangiz"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -32,7 +34,8 @@ export default function RegisterPage() {
             name="email"
             type="email"
             required
-            className="rounded border border-black/20 px-3 py-2 outline-none focus:border-[#8DC63F]"
+            className="auth-input"
+            placeholder="name@example.com"
           />
         </div>
         <div className="flex flex-col gap-1">
@@ -45,7 +48,8 @@ export default function RegisterPage() {
             type="password"
             required
             minLength={6}
-            className="rounded border border-black/20 px-3 py-2 outline-none focus:border-[#8DC63F]"
+            className="auth-input"
+            placeholder="Kamida 6 ta belgi"
           />
         </div>
         {state?.error && (
@@ -54,14 +58,14 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={pending}
-          className="rounded bg-black px-4 py-2 font-medium text-white transition hover:bg-[#8DC63F] disabled:opacity-60"
+          className="auth-submit"
         >
           {pending ? "Yuborilmoqda..." : "Ro'yxatdan o'tish"}
         </button>
       </form>
-      <p className="text-sm text-black/60">
+      <p className="auth-switch">
         Hisobingiz bormi?{" "}
-        <Link href="/login" className="font-medium text-black underline">
+        <Link href="/login">
           Kirish
         </Link>
       </p>

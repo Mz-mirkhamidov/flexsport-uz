@@ -2,15 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, MagnifyingGlass, Package, SoccerBall } from "@phosphor-icons/react/dist/ssr";
 import { CuratedProductCard } from "@/components/storefront/CuratedProductCard";
-import { categoryLabels, curatedProducts, formatUzs, type CuratedCategory } from "@/lib/catalog/curated-products";
+import { categoryLabels, formatUzs, type CuratedCategory } from "@/lib/catalog/curated-products";
+import { getCuratedProducts } from "@/lib/catalog/curated-query";
 
 const categories = Object.entries(categoryLabels) as [CuratedCategory, string][];
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string; category?: string; product?: string }> }) {
   const { q = "", category, product } = await searchParams;
-  const selected = curatedProducts.find((item) => item.slug === product);
+  const liveProducts = await getCuratedProducts();
+  const selected = liveProducts.find((item) => item.slug === product);
   const needle = q.trim().toLocaleLowerCase("uz");
-  const items = curatedProducts.filter((item) => {
+  const items = liveProducts.filter((item) => {
     const inCategory = !category || category === "all" || item.category === category;
     const inSearch = !needle || `${item.name} ${item.kicker} ${categoryLabels[item.category]}`.toLocaleLowerCase("uz").includes(needle);
     return inCategory && inSearch;
@@ -32,7 +34,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
     <form method="get" action="/search" className="catalog-search"><MagnifyingGlass/><input name="q" defaultValue={q} placeholder="Butsa, forma yoki anjom qidiring"/><button>Qidirish</button></form>
     <nav className="catalog-category-chips" aria-label="Mahsulot kategoriyalari">
       <Link href="/search" className={!category ? "active" : ""}>Hammasi <small>20</small></Link>
-      {categories.map(([key,label]) => <Link href={`/search?category=${key}`} className={category === key ? "active" : ""} key={key}>{label}<small>{curatedProducts.filter(p=>p.category===key).length}</small></Link>)}
+      {categories.map(([key,label]) => <Link href={`/search?category=${key}`} className={category === key ? "active" : ""} key={key}>{label}<small>{liveProducts.filter(p=>p.category===key).length}</small></Link>)}
     </nav>
     <div className="catalog-results-head"><div><span>SARALANGAN KOLLEKSIYA</span><h2>{category && categoryLabels[category as CuratedCategory] || (q ? `“${q}” natijalari` : "Barcha mahsulotlar")}</h2></div><strong>{items.length.toString().padStart(2,"0")}</strong></div>
     {items.length ? <div className="curated-catalog-grid">{items.map((item,index)=><CuratedProductCard product={item} priority={index<4} key={item.slug}/>)}</div> : <div className="catalog-empty"><Package/><h2>Bu yer hozircha bo‘sh</h2><p>Boshqa so‘z bilan qidiring yoki to‘liq kolleksiyaga qayting.</p><Link href="/search">20 ta mahsulotni ko‘rish</Link></div>}

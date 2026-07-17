@@ -28,7 +28,7 @@ export function AdminSidebarNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-0.5 px-3">
+    <nav className="flex min-w-max flex-row gap-1 px-3 md:min-w-0 md:flex-col md:gap-0.5">
       {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
         const isActive = exact ? pathname === href : pathname.startsWith(href);
         return (
