@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/admin";
 import { categorySchema, slugify } from "@/lib/validation/catalog";
 
 export type CategoryActionState = { error?: string } | null;
@@ -21,7 +21,7 @@ export async function createCategory(
     return { error: parsed.error.issues[0].message };
   }
 
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   const { error } = await supabase.from("categories").insert({
     name: parsed.data.name,
     slug: parsed.data.slug ? slugify(parsed.data.slug) : slugify(parsed.data.name),
@@ -54,7 +54,7 @@ export async function updateCategory(
     return { error: parsed.error.issues[0].message };
   }
 
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   const { error } = await supabase
     .from("categories")
     .update({
@@ -75,7 +75,7 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(categoryId: string) {
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   await supabase.from("categories").delete().eq("id", categoryId);
   revalidatePath("/admin/categories");
   revalidatePath("/", "layout");

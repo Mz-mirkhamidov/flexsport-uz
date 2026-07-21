@@ -130,11 +130,19 @@ export async function mockCompletePayment(orderId: string): Promise<{ error?: st
     return { error: "Payme sozlangan — mock to'lov o'chirilgan" };
   }
 
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Kirish talab qilinadi" };
+
   const admin = createAdminClient();
   const { data: order } = await admin
     .from("orders")
     .update({ product_payment_status: "paid" })
     .eq("id", orderId)
+    .eq("user_id", user.id)
+    .eq("product_payment_status", "pending")
     .select("*, order_items(*)")
     .single();
   if (!order) return { error: "Buyurtma topilmadi" };

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/admin";
 import { discountSchema } from "@/lib/validation/discounts";
 
 export type DiscountActionState = { error?: string } | null;
@@ -27,7 +27,7 @@ export async function createDiscount(
     return { error: parsed.error.issues[0].message };
   }
 
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   const { error } = await supabase.from("discounts").insert({
     scope: parsed.data.scope,
     category_id: parsed.data.scope === "category" ? parsed.data.categoryId : null,
@@ -44,13 +44,13 @@ export async function createDiscount(
 }
 
 export async function deleteDiscount(discountId: string) {
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   await supabase.from("discounts").delete().eq("id", discountId);
   revalidatePath("/admin/discounts");
 }
 
 export async function toggleDiscountActive(discountId: string, isActive: boolean) {
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   await supabase.from("discounts").update({ is_active: !isActive }).eq("id", discountId);
   revalidatePath("/admin/discounts");
 }

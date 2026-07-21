@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/admin";
 import {
   productSchema,
   slugify,
@@ -68,7 +69,7 @@ export async function createProduct(
     return { error: parsed.error.issues[0].message };
   }
 
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
 
   let brandId: string | null = null;
   try {
@@ -122,7 +123,7 @@ export async function updateProduct(
     return { error: parsed.error.issues[0].message };
   }
 
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
 
   let brandId: string | null = null;
   try {
@@ -156,7 +157,7 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(productId: string) {
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   await supabase.from("products").delete().eq("id", productId);
   revalidatePath("/admin/products");
 }
@@ -179,7 +180,7 @@ export async function addVariant(
     return { error: parsed.error.issues[0].message };
   }
 
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   const { error } = await supabase.from("product_variants").insert({
     product_id: productId,
     size: parsed.data.size || null,
@@ -202,7 +203,7 @@ export async function updateVariantStock(
   formData: FormData,
 ) {
   const stockQty = Number(formData.get("stockQty"));
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   await supabase
     .from("product_variants")
     .update({ stock_qty: Number.isFinite(stockQty) ? stockQty : 0 })
@@ -225,13 +226,13 @@ export async function updateVariantStock(
 }
 
 export async function deleteVariant(variantId: string, productId: string) {
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   await supabase.from("product_variants").delete().eq("id", variantId);
   revalidatePath(`/admin/products/${productId}/edit`);
 }
 
 export async function deleteProductImage(imageId: string, productId: string) {
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   const { data: image } = await supabase
     .from("product_images")
     .select("url")
@@ -262,7 +263,7 @@ export async function uploadProductImage(
     return { error: "Rasm tanlanmagan" };
   }
 
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   const ext = file.name.split(".").pop() || "jpg";
   const path = `${productId}/${crypto.randomUUID()}.${ext}`;
 

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/admin";
 import { reviewSchema } from "@/lib/validation/reviews";
 
 export type ReviewActionState = { error?: string; success?: boolean } | null;
@@ -47,13 +48,13 @@ export async function createReview(
 }
 
 export async function approveReview(reviewId: string) {
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   await supabase.from("reviews").update({ is_approved: true }).eq("id", reviewId);
   revalidatePath("/admin/reviews");
 }
 
 export async function deleteReview(reviewId: string) {
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   await supabase.from("reviews").delete().eq("id", reviewId);
   revalidatePath("/admin/reviews");
 }

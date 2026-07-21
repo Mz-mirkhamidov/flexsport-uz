@@ -1,11 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/admin";
 
 export async function updateDeliveryZoneFee(zoneId: string, formData: FormData) {
   const fee = Number(formData.get("fee"));
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   await supabase
     .from("delivery_zones")
     .update({ fee: Number.isFinite(fee) ? fee : 0 })
@@ -19,7 +19,7 @@ export async function updateContactInfo(
   _prevState: SettingsActionState,
   formData: FormData,
 ): Promise<SettingsActionState> {
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   const { error } = await supabase.from("settings").upsert({
     key: "contact_info",
     value: {

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/admin";
 import { sendTelegramMessage } from "@/lib/telegram/bot";
 import { orderStatusChangedMessage } from "@/lib/telegram/templates";
 
@@ -14,10 +14,7 @@ const NEXT_STATUS: Record<string, string | null> = {
 };
 
 export async function advanceOrderStatus(orderId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user } = await requireAdmin();
 
   const { data: order } = await supabase
     .from("orders")
@@ -45,10 +42,7 @@ export async function advanceOrderStatus(orderId: string) {
 }
 
 export async function cancelOrder(orderId: string) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { supabase, user } = await requireAdmin();
 
   const { data: order } = await supabase
     .from("orders")
@@ -73,7 +67,7 @@ export async function cancelOrder(orderId: string) {
 }
 
 export async function markDeliveryFeeCollected(orderId: string) {
-  const supabase = await createClient();
+  const { supabase } = await requireAdmin();
   await supabase
     .from("orders")
     .update({ delivery_fee_payment_status: "collected" })
