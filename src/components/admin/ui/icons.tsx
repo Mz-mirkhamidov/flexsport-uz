@@ -31,6 +31,16 @@ export function CategoriesIcon({ className = base }: IconProps) {
   );
 }
 
+export function ContentIcon({ className = base }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="m7 15 3-3 2.5 2.5L15 12l2 3" />
+      <circle cx="8" cy="8" r="1.3" />
+    </svg>
+  );
+}
+
 export function OrdersIcon({ className = base }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className={className}>

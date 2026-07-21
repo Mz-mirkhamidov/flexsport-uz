@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CategoriesIcon,
+  ContentIcon,
   DashboardIcon,
   DiscountsIcon,
   InventoryIcon,
@@ -16,6 +17,7 @@ import {
 const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: DashboardIcon, exact: true },
   { href: "/admin/products", label: "Mahsulotlar", icon: ProductsIcon },
+  { href: "/admin/storefront", label: "Bosh sahifa", icon: ContentIcon },
   { href: "/admin/categories", label: "Kategoriyalar", icon: CategoriesIcon },
   { href: "/admin/orders", label: "Buyurtmalar", icon: OrdersIcon },
   { href: "/admin/inventory", label: "Ombor", icon: InventoryIcon },

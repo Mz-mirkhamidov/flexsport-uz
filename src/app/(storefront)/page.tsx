@@ -4,6 +4,8 @@ import { ArrowRight, Barbell, BoxingGlove, ClockCounterClockwise, Heart, PersonS
 import { CuratedProductCard } from "@/components/storefront/CuratedProductCard";
 import { curatedProducts } from "@/lib/catalog/curated-products";
 import { getCuratedProducts } from "@/lib/catalog/curated-query";
+import { createClient } from "@/lib/supabase/server";
+import { resolveHomepageContent } from "@/lib/cms/homepage";
 
 export const revalidate = 3600;
 
@@ -46,18 +48,46 @@ function ProductRow({ title, products, href = "/search" }: { title: string; prod
   );
 }
 
+function MultilineText({ value }: { value: string }) {
+  return value.split("\n").map((line, index) => (
+    <span key={`${line}-${index}`}>
+      {index > 0 && <br />}
+      {line}
+    </span>
+  ));
+}
+
+function EmphasizedLastWord({ value }: { value: string }) {
+  const words = value.trim().split(/\s+/);
+  const lastWord = words.pop() ?? "";
+  return <>{words.join(" ")}<br /><em>{lastWord}</em></>;
+}
+
 export default async function HomePage() {
-  const liveProducts = await getCuratedProducts();
+  const supabase = await createClient();
+  const [{ data: page }, liveProducts] = await Promise.all([
+    supabase.from("site_pages").select("id").eq("slug", "homepage").eq("status", "published").maybeSingle(),
+    getCuratedProducts(),
+  ]);
+  const { data: sections } = page
+    ? await supabase
+        .from("site_sections")
+        .select("section_key, published_content")
+        .eq("page_id", page.id)
+        .eq("is_visible", true)
+    : { data: null };
+  const content = resolveHomepageContent(sections);
+
   return (
     <div className="premium-home">
       <section className="premium-hero">
-        <Image src="/flexsport-hero-athletes.webp" alt="FlexSport sportchilari" fill priority sizes="100vw" className="premium-hero-image" />
+        <Image src={content.hero.imageUrl} alt={content.hero.imageAlt} fill priority sizes="100vw" className="premium-hero-image" />
         <div className="premium-hero-shade" />
         <div className="premium-hero-copy">
-          <p>Cheksiz kuch.</p>
-          <h1>Sening<br />o‘yining.</h1>
-          <span>Chegaralarni yeng.<br />O‘z maqsadingga erish.</span>
-          <Link href="/search">Yangiliklarni ko‘rish <ArrowRight weight="bold" /></Link>
+          <p><MultilineText value={content.hero.titleTop} /></p>
+          <h1><MultilineText value={content.hero.titleAccent} /></h1>
+          <span><MultilineText value={content.hero.subtitle} /></span>
+          <Link href={content.hero.ctaHref}>{content.hero.ctaLabel} <ArrowRight weight="bold" /></Link>
         </div>
       </section>
 
@@ -74,10 +104,10 @@ export default async function HomePage() {
       </nav>
 
       <section className="premium-section">
-        <div className="premium-heading"><h2>Yangi mahsulotlar</h2><Link href="/search?q=kiyim">Barchasini ko‘rish <ArrowRight weight="bold" /></Link></div>
-        <Link href="/search?q=kiyim" className="featured-drop">
-          <Image src="/fs-compression.webp" alt="FS Pro Compression sport kiyimi" fill sizes="(max-width:700px) 100vw, 70vw" priority />
-          <div className="featured-copy"><small>Yangi</small><h3>FS Pro Compression</h3><p>Yengil. Nafas oladigan. Chegarasiz harakat.</p><strong>479 000 UZS</strong><span>Hozir sotib olish <ArrowRight weight="bold" /></span></div>
+        <div className="premium-heading"><h2>Yangi mahsulotlar</h2><Link href={content.featuredCampaign.ctaHref}>Barchasini ko‘rish <ArrowRight weight="bold" /></Link></div>
+        <Link href={content.featuredCampaign.ctaHref} className="featured-drop">
+          <Image src={content.featuredCampaign.imageUrl} alt={content.featuredCampaign.imageAlt} fill sizes="(max-width:700px) 100vw, 70vw" priority />
+          <div className="featured-copy"><small>{content.featuredCampaign.eyebrow}</small><h3>{content.featuredCampaign.heading}</h3><p>{content.featuredCampaign.description}</p><strong>{content.featuredCampaign.priceLabel}</strong><span>{content.featuredCampaign.ctaLabel} <ArrowRight weight="bold" /></span></div>
         </Link>
       </section>
 
@@ -87,7 +117,7 @@ export default async function HomePage() {
       </section>
 
       <section className="sport-finder">
-        <div className="sport-finder-copy"><span>SPORT FINDER / 01</span><h2>Maqsadingizni<br/><em>tanlang.</em></h2><p>Sizga mos kolleksiyani bir bosishda toping.</p></div>
+        <div className="sport-finder-copy"><span>{content.sportFinder.eyebrow}</span><h2><EmphasizedLastWord value={content.sportFinder.heading} /></h2><p>{content.sportFinder.description}</p></div>
         <div className="sport-finder-links">
           <Link href="/search?category=butsa"><small>01 / MAYDON</small><strong>Tezlik va nazorat</strong><ArrowRight/></Link>
           <Link href="/search?category=fitness"><small>02 / KUCH</small><strong>Fitness va trening</strong><ArrowRight/></Link>
