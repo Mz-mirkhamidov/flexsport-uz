@@ -45,7 +45,7 @@ export function ProductForm({ categories, product }: Props) {
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FieldGroup>
-            <Label htmlFor="categoryId">Kategoriya</Label>
+            <Label htmlFor="categoryId">Katalog / mahsulot turi</Label>
             <Select id="categoryId" name="categoryId" required defaultValue={product?.category_id ?? ""}>
               <option value="" disabled>
                 Tanlang
@@ -122,7 +122,7 @@ export function ProductForm({ categories, product }: Props) {
             ))}
           </Select>
           <p className="text-xs text-gray-500">
-            Yashirin mahsulot katalogda chiqmaydi, lekin uning bevosita havolasi ishlaydi.
+            Faol holatni tanlashdan oldin katalog turi, narx va kamida bitta rasmni tekshiring.
           </p>
         </FieldGroup>
 

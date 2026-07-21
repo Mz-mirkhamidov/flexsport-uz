@@ -43,6 +43,12 @@ export function ProductDetail({
   const [added, setAdded] = useState(false);
 
   const selectedVariant = variants.find((v) => v.id === selectedVariantId);
+  const selectedColor = selectedVariant?.color?.trim().toLocaleLowerCase("uz") ?? "";
+  const visibleImages = useMemo(() => {
+    if (!selectedColor) return sortedImages;
+    const matching = sortedImages.filter((image) => image.alt_text?.trim().toLocaleLowerCase("uz") === selectedColor);
+    return matching.length ? matching : sortedImages;
+  }, [selectedColor, sortedImages]);
   const outOfStock = !selectedVariant || selectedVariant.stock_qty === 0;
 
   function handleAddToCart() {
@@ -57,7 +63,7 @@ export function ProductDetail({
           .filter(Boolean)
           .join(" / ") || null,
         price: selectedVariant.price ?? price,
-        image: sortedImages[0]?.url ?? null,
+        image: visibleImages[0]?.url ?? null,
         maxStock: selectedVariant.stock_qty,
       },
       qty,
@@ -70,9 +76,9 @@ export function ProductDetail({
     <div className="product-detail-grid">
       <div className="flex flex-col gap-3">
         <div className="product-gallery-main">
-          {sortedImages[activeImage] ? (
+          {visibleImages[activeImage] ? (
             <Image
-              src={sortedImages[activeImage].url}
+              src={visibleImages[activeImage].url}
               alt={product.name}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -85,9 +91,9 @@ export function ProductDetail({
             </div>
           )}
         </div>
-        {sortedImages.length > 1 && (
+        {visibleImages.length > 1 && (
           <div className="flex gap-2">
-            {sortedImages.map((img, i) => (
+            {visibleImages.map((img, i) => (
               <button
                 key={img.id}
                 onClick={() => setActiveImage(i)}
@@ -139,7 +145,7 @@ export function ProductDetail({
                   <button
                     key={v.id}
                     disabled={isOut}
-                    onClick={() => setSelectedVariantId(v.id)}
+                    onClick={() => { setSelectedVariantId(v.id); setActiveImage(0); }}
                     className={`rounded border px-3 py-1.5 text-sm ${
                       isSelected
                         ? "border-[#8DC63F] bg-[#8DC63F]/10"

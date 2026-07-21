@@ -31,7 +31,7 @@ export async function login(
     .select("role")
     .eq("id", data.user.id)
     .single();
-  redirect(profile?.role === "admin" ? "/admin" : "/");
+  redirect(profile?.role === "admin" ? "/admin/storefront" : "/");
 }
 
 export async function register(

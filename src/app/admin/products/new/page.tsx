@@ -11,7 +11,7 @@ export default async function NewProductPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="Yangi mahsulot" />
+      <PageHeader title="1. Yangi mahsulot" subtitle="Avval asosiy ma’lumotlarni saqlang. Keyingi oynada rang, qoldiq va rasmlarni qo‘shasiz." />
       <div className="max-w-2xl">
         <ProductForm categories={categories ?? []} />
       </div>

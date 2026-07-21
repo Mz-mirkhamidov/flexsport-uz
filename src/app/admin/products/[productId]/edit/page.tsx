@@ -45,13 +45,15 @@ export default async function EditProductPage({
       </div>
 
       <div>
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">Variantlar</h2>
+        <h2 className="mb-1 text-lg font-semibold text-gray-900">2. Rang, o‘lcham va qoldiq</h2>
+        <p className="mb-3 text-sm text-gray-500">Har bir rang va o‘lchamni alohida variant qilib kiriting.</p>
         <VariantsSection productId={productId} variants={variants ?? []} />
       </div>
 
       <div>
-        <h2 className="mb-3 text-lg font-semibold text-gray-900">Rasmlar</h2>
-        <ImagesSection productId={productId} images={images ?? []} />
+        <h2 className="mb-1 text-lg font-semibold text-gray-900">3. Rasmlar</h2>
+        <p className="mb-3 text-sm text-gray-500">Rasmni rangga bog‘lasangiz, xaridor shu rangni tanlaganda aynan o‘sha rasm ochiladi.</p>
+        <ImagesSection productId={productId} images={images ?? []} variants={variants ?? []} />
       </div>
     </div>
   );

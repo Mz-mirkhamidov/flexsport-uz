@@ -281,6 +281,7 @@ export async function uploadProductImage(
   formData: FormData,
 ): Promise<UploadImageState> {
   const file = formData.get("file");
+  const imageColor = String(formData.get("imageColor") ?? "").trim();
   if (!(file instanceof File) || file.size === 0) {
     return { error: "Rasm tanlanmagan" };
   }
@@ -309,6 +310,7 @@ export async function uploadProductImage(
     product_id: productId,
     url: publicUrl,
     sort_order: count ?? 0,
+    alt_text: imageColor || null,
   });
   if (insertError) {
     return { error: insertError.message };
