@@ -34,9 +34,10 @@ function ShowcaseCard({ product, priority = false }: { product: (typeof showcase
   </article>;
 }
 
-function ProductRow({ title, products, href = "/search" }: { title: string; products: typeof curatedProducts; href?: string }) {
+function ProductRow({ title, products, href = "/search", adminMode = false }: { title: string; products: typeof curatedProducts; href?: string; adminMode?: boolean }) {
   return (
-    <section className="premium-section">
+    <section className={`premium-section ${adminMode ? "admin-editable-section" : ""}`}>
+      {adminMode && <Link href="/admin/products" className="admin-section-edit">Tahrirlash</Link>}
       <div className="premium-heading">
         <h2>{title}</h2>
         <Link href={href}>Barchasini ko‘rish <ArrowRight weight="bold" /></Link>
@@ -63,7 +64,7 @@ function EmphasizedLastWord({ value }: { value: string }) {
   return <>{words.join(" ")}<br /><em>{lastWord}</em></>;
 }
 
-export default async function HomePage() {
+export async function PremiumHome({ adminMode = false }: { adminMode?: boolean }) {
   const supabase = await createClient();
   const [{ data: page }, liveProducts] = await Promise.all([
     supabase.from("site_pages").select("id").eq("slug", "homepage").eq("status", "published").maybeSingle(),
@@ -80,7 +81,8 @@ export default async function HomePage() {
 
   return (
     <div className="premium-home">
-      <section className="premium-hero">
+      <section className={`premium-hero ${adminMode ? "admin-editable-section" : ""}`}>
+        {adminMode && <Link href="/admin/storefront/edit#hero" className="admin-section-edit">Tahrirlash</Link>}
         <Image src={content.hero.imageUrl} alt={content.hero.imageAlt} fill priority sizes="100vw" className="premium-hero-image" />
         <div className="premium-hero-shade" />
         <div className="premium-hero-copy">
@@ -103,7 +105,8 @@ export default async function HomePage() {
         ))}
       </nav>
 
-      <section className="premium-section">
+      <section className={`premium-section ${adminMode ? "admin-editable-section" : ""}`}>
+        {adminMode && <Link href="/admin/storefront/edit#featured-campaign" className="admin-section-edit">Tahrirlash</Link>}
         <div className="premium-heading"><h2>Yangi mahsulotlar</h2><Link href={content.featuredCampaign.ctaHref}>Barchasini ko‘rish <ArrowRight weight="bold" /></Link></div>
         <Link href={content.featuredCampaign.ctaHref} className="featured-drop">
           <Image src={content.featuredCampaign.imageUrl} alt={content.featuredCampaign.imageAlt} fill sizes="(max-width:700px) 100vw, 70vw" priority />
@@ -111,12 +114,14 @@ export default async function HomePage() {
         </Link>
       </section>
 
-      <section className="premium-section curated-showcase">
+      <section className={`premium-section curated-showcase ${adminMode ? "admin-editable-section" : ""}`}>
+        {adminMode && <Link href="/admin/products" className="admin-section-edit">Tahrirlash</Link>}
         <div className="premium-heading"><h2>Eng ko‘p sotilgan</h2><Link href="/search">Barchasini ko‘rish <ArrowRight weight="bold" /></Link></div>
         <div className="showcase-grid">{showcaseProducts.map((product, index) => <ShowcaseCard product={product} priority={index < 2} key={product.name} />)}</div>
       </section>
 
-      <section className="sport-finder">
+      <section className={`sport-finder ${adminMode ? "admin-editable-section" : ""}`}>
+        {adminMode && <Link href="/admin/storefront/edit#sport-finder" className="admin-section-edit">Tahrirlash</Link>}
         <div className="sport-finder-copy"><span>{content.sportFinder.eyebrow}</span><h2><EmphasizedLastWord value={content.sportFinder.heading} /></h2><p>{content.sportFinder.description}</p></div>
         <div className="sport-finder-links">
           <Link href="/search?category=butsa"><small>01 / MAYDON</small><strong>Tezlik va nazorat</strong><ArrowRight/></Link>
@@ -124,8 +129,12 @@ export default async function HomePage() {
           <Link href="/search?category=sumka"><small>03 / HARAKAT</small><strong>Kiyim va sumkalar</strong><ArrowRight/></Link>
         </div>
       </section>
-      <ProductRow title="Futbol uchun" products={liveProducts.filter((item) => ["butsa","forma","top","anjom"].includes(item.category))} href="/search?category=butsa" />
-      <ProductRow title="Fitness va harakat" products={liveProducts.filter((item) => ["fitness","sumka"].includes(item.category))} href="/search?category=fitness" />
+      <ProductRow adminMode={adminMode} title="Futbol uchun" products={liveProducts.filter((item) => ["butsa","forma","top","anjom"].includes(item.category))} href="/search?category=butsa" />
+      <ProductRow adminMode={adminMode} title="Fitness va harakat" products={liveProducts.filter((item) => ["fitness","sumka"].includes(item.category))} href="/search?category=fitness" />
     </div>
   );
+}
+
+export default function HomePage() {
+  return <PremiumHome />;
 }

@@ -1,169 +1,104 @@
 import Link from "next/link";
+import { Package, Plus } from "@phosphor-icons/react/dist/ssr";
+import { AdminStorefrontChrome } from "@/components/admin/AdminStorefrontChrome";
+import { CuratedProductCard } from "@/components/storefront/CuratedProductCard";
+import { getCuratedProducts } from "@/lib/catalog/curated-query";
 import { createClient } from "@/lib/supabase/server";
-import { DeleteButton } from "@/components/admin/DeleteButton";
-import { archiveProduct } from "@/actions/admin/products";
-import { PageHeader } from "@/components/admin/ui/PageHeader";
-import { Button } from "@/components/admin/ui/Button";
-import { Badge } from "@/components/admin/ui/Badge";
-import { Input } from "@/components/admin/ui/Field";
-import { TableShell, Th, Td, Tr } from "@/components/admin/ui/Table";
-import { EmptyState } from "@/components/admin/ui/EmptyState";
-import {
-  PRODUCT_STATUS_LABEL,
-  PRODUCT_STATUS_OPTIONS,
-  type ProductStatus,
-} from "@/lib/catalog/product-status";
+import type { CuratedProduct } from "@/lib/catalog/curated-products";
 
-const PAGE_SIZE = 50;
-
-function formatPrice(value: number) {
-  return new Intl.NumberFormat("uz-UZ").format(value) + " so'm";
-}
-
-const STATUS_TONE = {
-  draft: "amber",
-  active: "green",
-  hidden: "blue",
-  archived: "gray",
-} as const;
+const PAGE_SIZE = 24;
 
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; page?: string; status?: ProductStatus }>;
+  searchParams: Promise<{ q?: string; status?: "active" | "archived"; page?: string }>;
 }) {
-  const { q, page: pageParam, status } = await searchParams;
-  const page = Number(pageParam) || 1;
+  const { q = "", status = "active", page: pageParam } = await searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
   const supabase = await createClient();
 
-  let query = supabase
-    .from("products")
-    .select(
-      "id, name, base_price, cost_price, discount_pct, status, categories(name), product_variants(stock_qty, reserved_qty)",
-      { count: "exact" },
-    )
-    .order("created_at", { ascending: false });
-  if (q) query = query.ilike("name", `%${q}%`);
-  if (status) query = query.eq("status", status);
+  const [{ count: activeCount }, { count: archivedCount }] = await Promise.all([
+    supabase.from("products").select("id", { count: "exact", head: true }).eq("status", "active"),
+    supabase.from("products").select("id", { count: "exact", head: true }).eq("status", "archived"),
+  ]);
 
-  const from = (page - 1) * PAGE_SIZE;
-  const { data: products, count } = await query.range(from, from + PAGE_SIZE - 1);
-  const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
+  let products: Array<CuratedProduct & { id?: string }> = [];
+  let total = activeCount ?? 0;
+
+  if (status === "archived") {
+    let query = supabase
+      .from("products")
+      .select("id, slug, name, description, base_price, product_images(url, sort_order)", { count: "exact" })
+      .eq("status", "archived")
+      .order("created_at", { ascending: false });
+    if (q) query = query.ilike("name", `%${q}%`);
+    const from = (page - 1) * PAGE_SIZE;
+    const { data, count } = await query.range(from, from + PAGE_SIZE - 1);
+    total = count ?? 0;
+    products = (data ?? []).map((product) => ({
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      description: product.description ?? "Arxivdagi mahsulot",
+      kicker: "Arxiv",
+      category: "anjom",
+      price: product.base_price,
+      image: [...product.product_images].sort((a, b) => a.sort_order - b.sort_order)[0]?.url ?? "/catalog/ball-match-black.webp",
+      badge: "Arxiv",
+    }));
+  } else {
+    const liveProducts = await getCuratedProducts();
+    const needle = q.trim().toLocaleLowerCase("uz");
+    products = liveProducts.filter((product) => !needle || `${product.name} ${product.kicker}`.toLocaleLowerCase("uz").includes(needle));
+    total = products.length;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader
-        title="Mahsulotlar"
-        subtitle={`${count ?? 0} ta mahsulot`}
-        action={
-          <Link href="/admin/products/new">
-            <Button>+ Yangi mahsulot</Button>
-          </Link>
-        }
-      />
+    <AdminStorefrontChrome>
+      <div className="catalog-discovery admin-catalog-workspace">
+        <section className="admin-catalog-hero">
+          <div><span>ADMIN KATALOG</span><h1>Mahsulotlarni<br /><em>ko‘rinishda boshqaring.</em></h1><p>Mehmon ko‘radigan kartani ko‘ring va ustidagi tahrirlash tugmasidan o‘zgartiring.</p></div>
+          <Link href="/admin/products/new" className="admin-new-product"><Plus weight="bold" /> Yangi mahsulot</Link>
+        </section>
 
-      <form method="get" action="/admin/products" className="flex flex-wrap gap-2">
-        <Input
-          type="text"
-          name="q"
-          defaultValue={q}
-          placeholder="Nomi bo'yicha qidirish..."
-          className="max-w-xs"
-        />
-        <select
-          name="status"
-          defaultValue={status ?? ""}
-          className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700"
-        >
-          <option value="">Barcha holatlar</option>
-          {PRODUCT_STATUS_OPTIONS.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-        <Button type="submit" variant="secondary">Qidirish</Button>
-      </form>
+        <form method="get" action="/admin/products" className="catalog-search">
+          <input type="hidden" name="status" value={status} />
+          <input name="q" defaultValue={q} placeholder="Mahsulot nomini qidiring" />
+          <button>Qidirish</button>
+        </form>
 
-      <TableShell>
-        <thead>
-          <tr>
-            <Th>Nomi</Th>
-            <Th>Kategoriya</Th>
-            <Th>Kelish narxi</Th>
-            <Th>Sotilish narxi</Th>
-            <Th>Chegirma</Th>
-            <Th>Qoldiq</Th>
-            <Th>Holat</Th>
-            <Th></Th>
-          </tr>
-        </thead>
-        <tbody>
-          {(products ?? []).map((product) => {
-            const stock = product.product_variants.reduce(
-              (sum, variant) => sum + Math.max(0, variant.stock_qty - variant.reserved_qty),
-              0,
-            );
-            return (
-              <Tr key={product.id}>
-                <Td className="font-medium text-gray-900">{product.name}</Td>
-                <Td>{product.categories?.name ?? "—"}</Td>
-                <Td>{product.cost_price == null ? "—" : formatPrice(product.cost_price)}</Td>
-                <Td>{formatPrice(product.base_price)}</Td>
-                <Td>{product.discount_pct ? `${product.discount_pct}%` : "—"}</Td>
-                <Td>{stock} dona</Td>
-                <Td>
-                  <Badge tone={STATUS_TONE[product.status]}>
-                    {PRODUCT_STATUS_LABEL[product.status]}
-                  </Badge>
-                </Td>
-                <Td>
-                  <div className="flex items-center gap-3">
-                    <Link
-                      href={`/admin/products/${product.id}/edit`}
-                      className="text-sm font-medium text-gray-600 hover:text-gray-900"
-                    >
-                      Tahrirlash
-                    </Link>
-                    {product.status !== "archived" && (
-                      <DeleteButton
-                        action={archiveProduct.bind(null, product.id)}
-                        label="Arxivga"
-                        confirmMessage={`"${product.name}" mahsulotini arxivga o'tkazasizmi?`}
-                      />
-                    )}
-                  </div>
-                </Td>
-              </Tr>
-            );
-          })}
-          {(products ?? []).length === 0 && (
-            <EmptyState title="Mahsulotlar topilmadi" colSpan={8} />
-          )}
-        </tbody>
-      </TableShell>
+        <nav className="catalog-category-chips admin-status-tabs" aria-label="Mahsulot holatlari">
+          <Link href="/admin/products" className={status === "active" ? "active" : ""}>Faol <small>{activeCount ?? 0}</small></Link>
+          <Link href="/admin/products?status=archived" className={status === "archived" ? "active" : ""}>Arxiv <small>{archivedCount ?? 0}</small></Link>
+        </nav>
 
-      {totalPages > 1 && (
-        <div className="flex flex-wrap items-center justify-center gap-2 text-sm">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-            <Link
-              key={pageNumber}
-              href={`/admin/products?${new URLSearchParams({
-                ...(q ? { q } : {}),
-                ...(status ? { status } : {}),
-                page: String(pageNumber),
-              }).toString()}`}
-              className={`rounded-lg px-3 py-1.5 ${
-                pageNumber === page
-                  ? "bg-gray-900 text-white"
-                  : "border border-gray-200 text-gray-600 hover:border-gray-400"
-              }`}
-            >
-              {pageNumber}
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
+        <div className="catalog-results-head"><div><span>VIZUAL KATALOG</span><h2>{status === "archived" ? "Arxivdagi mahsulotlar" : "Saytda ko‘rinadigan mahsulotlar"}</h2></div><strong>{total}</strong></div>
+
+        {products.length ? (
+          <div className="curated-catalog-grid">
+            {products.map((product, index) => (
+              <CuratedProductCard
+                key={product.id ?? product.slug}
+                product={product}
+                priority={index < 4}
+                adminEditHref={product.id ? `/admin/products/${product.id}/edit` : "/admin/products/new"}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="catalog-empty"><Package /><h2>Mahsulot topilmadi</h2><p>Qidiruvni o‘zgartirib ko‘ring.</p></div>
+        )}
+
+        {status === "archived" && totalPages > 1 && (
+          <div className="admin-catalog-pagination">
+            {Array.from({ length: totalPages }, (_, index) => index + 1).slice(Math.max(0, page - 3), page + 2).map((pageNumber) => (
+              <Link key={pageNumber} href={`/admin/products?status=archived&page=${pageNumber}${q ? `&q=${encodeURIComponent(q)}` : ""}`} className={pageNumber === page ? "active" : ""}>{pageNumber}</Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </AdminStorefrontChrome>
   );
 }

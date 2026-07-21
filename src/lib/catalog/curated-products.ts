@@ -1,6 +1,7 @@
 export type CuratedCategory = "butsa" | "forma" | "top" | "anjom" | "fitness" | "sumka";
 
 export type CuratedProduct = {
+  id?: string;
   slug: string;
   name: string;
   kicker: string;

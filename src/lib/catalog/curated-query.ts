@@ -6,7 +6,7 @@ export async function getCuratedProducts(): Promise<CuratedProduct[]> {
   const supabase = await createClient();
   const { data } = await supabase
     .from("products")
-    .select("slug,name,description,base_price,tags,product_images(url,sort_order)")
+    .select("id,slug,name,description,base_price,tags,product_images(url,sort_order)")
     .contains("tags", ["premium-curated"])
     .eq("is_active", true)
     .order("created_at", { ascending: true });
@@ -17,6 +17,7 @@ export async function getCuratedProducts(): Promise<CuratedProduct[]> {
     const categoryTag = product.tags.find((tag) => tag.startsWith("collection:"))?.split(":")[1] as CuratedCategory | undefined;
     const image = [...product.product_images].sort((a,b) => a.sort_order-b.sort_order)[0]?.url;
     return {
+      id: product.id,
       slug: product.slug,
       name: product.name,
       kicker: fallback?.kicker ?? "FlexSport premium kolleksiyasi",

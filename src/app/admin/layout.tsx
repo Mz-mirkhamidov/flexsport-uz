@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { logout } from "@/actions/auth";
 import { AdminSidebarNav } from "@/components/admin/AdminSidebarNav";
 import { LogoutIcon, StorefrontIcon } from "@/components/admin/ui/icons";
+import { AdminShell } from "@/components/admin/AdminShell";
 
 export default async function AdminLayout({
   children,
@@ -21,8 +22,7 @@ export default async function AdminLayout({
         .single()
     : { data: null };
 
-  return (
-    <div className="flex min-h-full flex-col bg-gray-50 md:flex-row">
+  const sidebar = (
       <aside className="flex w-full shrink-0 flex-col bg-gray-950 md:min-h-screen md:w-64">
         <div className="px-5 py-6">
           <Link href="/admin" className="text-lg font-bold text-white">
@@ -65,7 +65,11 @@ export default async function AdminLayout({
           </div>
         </div>
       </aside>
-      <main className="flex-1 overflow-x-hidden p-4 md:p-8">{children}</main>
-    </div>
+  );
+
+  return (
+    <AdminShell sidebar={sidebar}>
+      {children}
+    </AdminShell>
   );
 }
