@@ -3,9 +3,10 @@
 type Props = {
   action: () => Promise<void>;
   confirmMessage?: string;
+  label?: string;
 };
 
-export function DeleteButton({ action, confirmMessage }: Props) {
+export function DeleteButton({ action, confirmMessage, label = "O'chirish" }: Props) {
   return (
     <form
       action={action}
@@ -19,7 +20,7 @@ export function DeleteButton({ action, confirmMessage }: Props) {
         type="submit"
         className="text-sm font-medium text-red-600 hover:underline"
       >
-        O&apos;chirish
+        {label}
       </button>
     </form>
   );

@@ -6,6 +6,7 @@ import { createProduct, updateProduct } from "@/actions/admin/products";
 import { Card } from "@/components/admin/ui/Card";
 import { Button } from "@/components/admin/ui/Button";
 import { FieldGroup, Input, Label, Select, Textarea } from "@/components/admin/ui/Field";
+import { PRODUCT_STATUS_OPTIONS } from "@/lib/catalog/product-status";
 
 type Props = {
   categories: Tables<"categories">[];
@@ -62,9 +63,21 @@ export function ProductForm({ categories, product }: Props) {
           </FieldGroup>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <FieldGroup>
-            <Label htmlFor="basePrice">Narx (so&apos;m)</Label>
+            <Label htmlFor="costPrice">Kelish narxi (so&apos;m)</Label>
+            <Input
+              id="costPrice"
+              name="costPrice"
+              type="number"
+              step="0.01"
+              min={0}
+              defaultValue={product?.cost_price ?? ""}
+              placeholder="Faqat admin ko‘radi"
+            />
+          </FieldGroup>
+          <FieldGroup>
+            <Label htmlFor="basePrice">Sotilish narxi (so&apos;m)</Label>
             <Input
               id="basePrice"
               name="basePrice"
@@ -100,6 +113,20 @@ export function ProductForm({ categories, product }: Props) {
         </div>
 
         <FieldGroup>
+          <Label htmlFor="status">Mahsulot holati</Label>
+          <Select id="status" name="status" defaultValue={product?.status ?? "draft"}>
+            {PRODUCT_STATUS_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label} — {option.description}
+              </option>
+            ))}
+          </Select>
+          <p className="text-xs text-gray-500">
+            Yashirin mahsulot katalogda chiqmaydi, lekin uning bevosita havolasi ishlaydi.
+          </p>
+        </FieldGroup>
+
+        <FieldGroup>
           <Label htmlFor="tags">Tag&apos;lar (vergul bilan ajrating)</Label>
           <Input
             id="tags"
@@ -110,15 +137,6 @@ export function ProductForm({ categories, product }: Props) {
           />
         </FieldGroup>
 
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            name="isActive"
-            defaultChecked={product?.is_active ?? true}
-            className="h-4 w-4 rounded border-gray-300 text-[#8DC63F] focus:ring-[#8DC63F]"
-          />
-          Faol (saytda ko&apos;rinadi)
-        </label>
         <label className="flex items-center gap-2 text-sm text-gray-700">
           <input
             type="checkbox"

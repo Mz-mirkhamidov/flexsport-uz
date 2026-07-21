@@ -60,10 +60,11 @@ export async function createProduct(
     categoryId: formData.get("categoryId"),
     brandName: formData.get("brandName"),
     basePrice: formData.get("basePrice"),
+    costPrice: formData.get("costPrice") || undefined,
     discountPct: formData.get("discountPct") || undefined,
     tags: formData.get("tags"),
     lowStockThreshold: formData.get("lowStockThreshold") || 5,
-    isActive: formData.get("isActive") === "on",
+    status: formData.get("status"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
@@ -87,10 +88,12 @@ export async function createProduct(
       category_id: parsed.data.categoryId,
       brand_id: brandId,
       base_price: parsed.data.basePrice,
+      cost_price: parsed.data.costPrice ?? null,
       discount_pct: parsed.data.discountPct ?? null,
       tags: productTags(formData, parsed.data.tags),
       low_stock_threshold: parsed.data.lowStockThreshold,
-      is_active: parsed.data.isActive,
+      status: parsed.data.status,
+      is_active: parsed.data.status === "active",
     })
     .select("id")
     .single();
@@ -114,10 +117,11 @@ export async function updateProduct(
     categoryId: formData.get("categoryId"),
     brandName: formData.get("brandName"),
     basePrice: formData.get("basePrice"),
+    costPrice: formData.get("costPrice") || undefined,
     discountPct: formData.get("discountPct") || undefined,
     tags: formData.get("tags"),
     lowStockThreshold: formData.get("lowStockThreshold") || 5,
-    isActive: formData.get("isActive") === "on",
+    status: formData.get("status"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
@@ -141,10 +145,12 @@ export async function updateProduct(
       category_id: parsed.data.categoryId,
       brand_id: brandId,
       base_price: parsed.data.basePrice,
+      cost_price: parsed.data.costPrice ?? null,
       discount_pct: parsed.data.discountPct ?? null,
       tags: productTags(formData, parsed.data.tags),
       low_stock_threshold: parsed.data.lowStockThreshold,
-      is_active: parsed.data.isActive,
+      status: parsed.data.status,
+      is_active: parsed.data.status === "active",
     })
     .eq("id", productId);
   if (error) {
@@ -162,6 +168,18 @@ export async function deleteProduct(productId: string) {
   revalidatePath("/admin/products");
 }
 
+export async function archiveProduct(productId: string) {
+  const { supabase } = await requireAdmin();
+  const { error } = await supabase
+    .from("products")
+    .update({ status: "archived", is_active: false })
+    .eq("id", productId);
+
+  if (error) throw new Error(error.message);
+  revalidatePath("/admin/products");
+  revalidatePath(`/admin/products/${productId}/edit`);
+}
+
 export type VariantActionState = { error?: string } | null;
 
 export async function addVariant(
@@ -173,8 +191,10 @@ export async function addVariant(
     size: formData.get("size"),
     color: formData.get("color"),
     price: formData.get("price") || undefined,
+    costPrice: formData.get("costPrice") || undefined,
     stockQty: formData.get("stockQty") || 0,
     sku: formData.get("sku"),
+    colorHex: formData.get("colorHex"),
   });
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
@@ -186,8 +206,10 @@ export async function addVariant(
     size: parsed.data.size || null,
     color: parsed.data.color || null,
     price: parsed.data.price ?? null,
+    cost_price: parsed.data.costPrice ?? null,
     stock_qty: parsed.data.stockQty,
     sku: parsed.data.sku || null,
+    color_hex: parsed.data.colorHex || null,
   });
   if (error) {
     return { error: error.message };

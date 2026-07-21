@@ -19,7 +19,7 @@ export default async function ProductPage({
     .from("products")
     .select("*, product_variants(*), product_images(*)")
     .eq("slug", productSlug)
-    .eq("is_active", true)
+    .in("status", ["active", "hidden"])
     .single();
 
   if (!product) notFound();

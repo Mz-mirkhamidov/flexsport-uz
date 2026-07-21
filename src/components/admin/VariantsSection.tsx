@@ -32,6 +32,7 @@ export function VariantsSection({ productId, variants }: Props) {
             <Th>O&apos;lcham</Th>
             <Th>Rang</Th>
             <Th>Narx</Th>
+            <Th>Kelish narxi</Th>
             <Th>Qoldiq</Th>
             <Th>SKU</Th>
             <Th></Th>
@@ -41,8 +42,19 @@ export function VariantsSection({ productId, variants }: Props) {
           {variants.map((v) => (
             <Tr key={v.id}>
               <Td>{v.size || "—"}</Td>
-              <Td>{v.color || "—"}</Td>
+              <Td>
+                <span className="inline-flex items-center gap-2">
+                  {v.color_hex && (
+                    <span
+                      className="h-4 w-4 rounded-full border border-gray-200"
+                      style={{ backgroundColor: v.color_hex }}
+                    />
+                  )}
+                  {v.color || "—"}
+                </span>
+              </Td>
               <Td>{v.price ?? "—"}</Td>
+              <Td>{v.cost_price ?? "—"}</Td>
               <Td>
                 <form
                   action={updateVariantStock.bind(null, v.id, productId)}
@@ -71,7 +83,7 @@ export function VariantsSection({ productId, variants }: Props) {
               </Td>
             </Tr>
           ))}
-          {variants.length === 0 && <EmptyState title="Variant qo'shilmagan" colSpan={6} />}
+          {variants.length === 0 && <EmptyState title="Variant qo'shilmagan" colSpan={7} />}
         </tbody>
       </TableShell>
 
@@ -88,12 +100,20 @@ export function VariantsSection({ productId, variants }: Props) {
           <Input name="color" type="text" className="w-24 py-1.5" />
         </div>
         <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-gray-500">Rang kodi</label>
+          <Input name="colorHex" type="color" defaultValue="#000000" className="h-9 w-14 p-1" />
+        </div>
+        <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-gray-500">Narx (ixtiyoriy)</label>
           <Input name="price" type="number" step="0.01" min={0} className="w-28 py-1.5" />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-gray-500">Qoldiq</label>
           <Input name="stockQty" type="number" min={0} defaultValue={0} className="w-20 py-1.5" />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs font-medium text-gray-500">Kelish narxi</label>
+          <Input name="costPrice" type="number" step="0.01" min={0} className="w-28 py-1.5" />
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-gray-500">SKU</label>
